@@ -79,7 +79,7 @@ docker stop gameon-player ; docker rm gameon-player
 ### Restart Daemon
 
 ```
-docker run -d -p 9443:9443 -e LICENSE=accept --name gameon-player gameon-player ; docker stop gameon-player ; docker rm gameon-player
+docker stop gameon-player ; docker rm gameon-player; docker run -d -p 9443:9443 -e LICENSE=accept --name gameon-player gameon-player
 ```
 
 
