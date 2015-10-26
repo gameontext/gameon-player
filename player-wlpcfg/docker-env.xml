@@ -1,3 +1,0 @@
-<server>
-	<jndiEntry jndiName="conciergeUrl" value="${env.DOCKER_CONCIERGE_URL}" id="concierge-url" />
-</server>
