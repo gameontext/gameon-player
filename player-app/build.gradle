@@ -44,6 +44,7 @@ task exportLibs(type: Copy) {
 }
 
 build.dependsOn(exportLibs)
+build.dependsOn(bowerInstall)
 
 // Set the Eclipse facets to use 3.1 of the Dynamic Web Module which requires Java 1.7 (at least)
 // Also include JAX-RS and javascript
