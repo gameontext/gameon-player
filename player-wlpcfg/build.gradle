@@ -13,7 +13,8 @@ buildscript {
 
 task copyTask(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
-    into 'servers/gameon-player/apps/player-app.war'
+    into 'servers/gameon-player/apps/'
+    rename("player-app-1.0.war", "player-app.war")
 }
 
 apply plugin: 'com.bmuschko.docker-remote-api'
