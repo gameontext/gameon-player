@@ -27,9 +27,16 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
 
+def dockerHost = System.getenv('DOCKER_HOST')
+
+if (dockerHost.indexOf('tcp') == 0)
+{
+	dockerHost = dockerHost.replace('tcp','https')
+}
+
 docker {
-    url = System.getenv('GRADLE_DOCKER_HOST')
-    certPath = new File(System.getenv("WORKSPACE") + "/dockercfg")
+	url = dockerHost
+    certPath = new File(System.getenv("DOCKER_CERT_PATH"))
 }
 
 task buildDockerImage(type: DockerBuildImage, dependsOn: ['copyWAR','copyMongo']) {
