@@ -17,7 +17,7 @@ if (dockerHost.indexOf('tcp') == 0)
 	dockerHost = dockerHost.replace('tcp','https')
 }
 
-def catdeterminedEnvironment = ["LICENSE=accept",
+def determinedEnvironment = ["LICENSE=accept",
 			"ADMIN_PASSWORD=" + System.getenv('ADMIN_PASSWORD'), 
 			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
 			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
