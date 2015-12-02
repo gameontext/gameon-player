@@ -51,7 +51,8 @@ task createNewContainer(type: DockerCreateContainer) {
 	targetImageId { "gameon-player" }
 	containerName = "gameon-player"
 	portBindings = ['9443:9443']
-	env = ["LICENSE=accept", 
+	env = ["LICENSE=accept",
+			"ADMIN_PASSWORD=" + System.getenv('ADMIN_PASSWORD'), 
 			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
 			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
 			"MONGO_HOST=" + System.getenv('MONGO_HOST'),
