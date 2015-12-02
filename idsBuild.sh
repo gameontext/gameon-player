@@ -20,8 +20,6 @@ echo Building projects using gradle...
 echo Building and Starting Concierge Docker Image...
 cd player-wlpcfg
 
-
-export DOCKER_CERT_PATH=$WORKSPACE/dockercfg
 ../gradlew buildDockerImage 
 ../gradlew stopCurrentContainer 
 ../gradlew removeCurrentContainer
