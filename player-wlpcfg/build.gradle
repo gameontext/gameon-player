@@ -10,6 +10,31 @@ buildscript {
 	}
 }
 
+def dockerHost = System.getenv('DOCKER_HOST')
+
+if (dockerHost.indexOf('tcp') == 0)
+{
+	dockerHost = dockerHost.replace('tcp','https')
+}
+
+def catdeterminedEnvironment = ["LICENSE=accept",
+			"ADMIN_PASSWORD=" + System.getenv('ADMIN_PASSWORD'), 
+			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
+			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
+			"MONGO_HOST=" + System.getenv('MONGO_HOST'),
+			"MONGO_PORT=" + System.getenv('MONGO_PORT'),
+			"TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
+			"TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
+			"FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
+			"FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
+			"SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
+			"PLAYER_URL=" + System.getenv('PLAYER_URL')
+		]
+if (null != System.getenv("LOGGING_DOCKER_HOST"))
+{
+	determinedEnvironment << "LOGGING_DOCKER_HOST=" + System.getenv("LOGGING_DOCKER_HOST")
+}
+
 
 task copyWAR(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
@@ -26,13 +51,6 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
-
-def dockerHost = System.getenv('DOCKER_HOST')
-
-if (dockerHost.indexOf('tcp') == 0)
-{
-	dockerHost = dockerHost.replace('tcp','https')
-}
 
 docker {
 	url = dockerHost
@@ -58,20 +76,7 @@ task createNewContainer(type: DockerCreateContainer) {
 	targetImageId { "gameon-player" }
 	containerName = "gameon-player"
 	portBindings = ['9443:9443']
-	env = ["LICENSE=accept",
-			"ADMIN_PASSWORD=" + System.getenv('ADMIN_PASSWORD'), 
-			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
-			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
-			"MONGO_HOST=" + System.getenv('MONGO_HOST'),
-			"MONGO_PORT=" + System.getenv('MONGO_PORT'),
-			"LOGGING_DOCKER_HOST=" + System.getenv("LOGGING_DOCKER_HOST"),
-			"TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
-			"TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
-			"FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
-			"FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
-			"SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
-			"PLAYER_URL=" + System.getenv('PLAYER_URL')
-		]
+	env = determinedEnvironment
 }
 
 task startNewContainer(type: DockerStartContainer) {
