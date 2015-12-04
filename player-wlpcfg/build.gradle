@@ -10,15 +10,18 @@ buildscript {
 	}
 }
 
-def dockerHost = System.getenv('DOCKER_HOST')
-
-if (dockerHost.indexOf('tcp') == 0)
+def dockerHost = "https://localhost:2376"
+if (null != System.getenv("DOCKER_HOST"))
 {
-	dockerHost = dockerHost.replace('tcp','https')
+	dockerHost = System.getenv('DOCKER_HOST')
+
+	if (dockerHost.indexOf('tcp') == 0)
+	{
+		dockerHost = dockerHost.replace('tcp','https')
+	}
 }
 
 def determinedEnvironment = ["LICENSE=accept",
-			"ADMIN_PASSWORD=" + System.getenv('ADMIN_PASSWORD'), 
 			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
 			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
 			"MONGO_HOST=" + System.getenv('MONGO_HOST'),
@@ -30,9 +33,11 @@ def determinedEnvironment = ["LICENSE=accept",
 			"SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
 			"PLAYER_URL=" + System.getenv('PLAYER_URL')
 		]
-if (null != System.getenv("LOGGING_DOCKER_HOST"))
+if (null != System.getenv("LOGSTASH_ENDPOINT"))
 {
-	determinedEnvironment << "LOGGING_DOCKER_HOST=" + System.getenv("LOGGING_DOCKER_HOST")
+	determinedEnvironment << "LOGSTASH_ENDPOINT=" + System.getenv("LOGSTASH_ENDPOINT")
+	determinedEnvironment << "LOGSTASH_KEY=" + System.getenv("LOGSTASH_KEY")
+	determinedEnvironment << "LOGSTASH_CERT=" + System.getenv("LOGSTASH_CERT")
 }
 
 
@@ -52,7 +57,6 @@ apply plugin: 'com.bmuschko.docker-remote-api'
 import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
 
-println System.getenv("DOCKER_CERT_PATH")
 docker {
 	url = dockerHost
     certPath = new File(System.getenv("DOCKER_CERT_PATH"))
