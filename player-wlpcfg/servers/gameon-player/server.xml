@@ -33,8 +33,6 @@
     the following element, e.g. host="*" -->
   <httpEndpoint host="*" httpPort="-1" httpsPort="9443" id="defaultHttpEndpoint"/>
   
-  <applicationMonitor updateTrigger="mbean"/>
-  
   <!-- Signed JWT keystore info -->
   <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.jks"/>
   <jndiEntry jndiName="jwtKeyStorePassword" value="testOnlyKeystore"/>
