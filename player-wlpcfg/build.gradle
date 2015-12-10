@@ -45,6 +45,10 @@ if (null != System.getenv("LOGSTASH_ENDPOINT"))
 	determinedEnvironment << "LOGSTASH_CERT=" + System.getenv("LOGSTASH_CERT")
 }
 
+if (null != System.getenv("SSL_CERT"))
+{
+	determinedEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
+}
 
 task copyWAR(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
