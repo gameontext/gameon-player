@@ -35,6 +35,8 @@ def determinedEnvironment = ["LICENSE=accept",
 			"TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
 			"FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
 			"FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
+			"GOOGLE_APP_ID=" + System.getenv('GOOGLE_APP_ID'),
+			"GOOGLE_APP_SECRET=" + System.getenv('GOOGLE_APP_SECRET'),
 			"SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
 			"PLAYER_URL=" + System.getenv('PLAYER_URL')
 		]
