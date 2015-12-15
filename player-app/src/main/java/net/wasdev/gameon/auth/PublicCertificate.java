@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright (c) 2015 IBM Corp.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package net.wasdev.gameon.auth;
 
 import java.io.FileInputStream;
@@ -24,8 +39,8 @@ import javax.xml.bind.DatatypeConverter;
 public class PublicCertificate extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	java.security.cert.Certificate publicCert=null;
-	
+	java.security.cert.Certificate publicCert = null;
+
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -45,9 +60,9 @@ public class PublicCertificate extends HttpServlet {
 			KeyStore signingKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
 			signingKeystore.load(is, keyStorePW.toCharArray());
 
-			//grab the key we'll publish for others to verify our trust.
+			// grab the key we'll publish for others to verify our trust.
 			publicCert = signingKeystore.getCertificate(keyStoreAlias);
-			
+
 		} catch (NamingException e) {
 			throw new IOException(e);
 		} catch (KeyStoreException e) {
@@ -68,12 +83,12 @@ public class PublicCertificate extends HttpServlet {
 
 		try {
 			response.getWriter().append("-----BEGIN CERTIFICATE-----\n")
-			                    .append(DatatypeConverter.printBase64Binary(publicCert.getEncoded()).replaceAll("(.{64})", "$1\n"))
-			                  .append("\n-----END CERTIFICATE-----\n");
+					.append(DatatypeConverter.printBase64Binary(publicCert.getEncoded()).replaceAll("(.{64})", "$1\n"))
+					.append("\n-----END CERTIFICATE-----\n");
 		} catch (CertificateEncodingException e) {
 			throw new IOException(e);
 		}
-		
+
 	}
 
 	/**
