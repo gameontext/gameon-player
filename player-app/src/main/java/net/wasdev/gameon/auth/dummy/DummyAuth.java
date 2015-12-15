@@ -38,42 +38,42 @@ import net.wasdev.gameon.auth.JwtAuth;
  */
 @WebServlet("/DummyAuth")
 public class DummyAuth extends JwtAuth {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Resource(lookup = "authCallbcakURLSuccess")
-	String callbackSuccess;
+    @Resource(lookup = "authCallbcakURLSuccess")
+    String callbackSuccess;
 
-	public DummyAuth() {
-		super();
-	}
+    public DummyAuth() {
+        super();
+    }
 
-	@PostConstruct
-	private void verifyInit() {
-		if (callbackSuccess == null) {
-			System.err.println("Error finding auth callback url; please set this in your environment variables!");
-		}
-	}
+    @PostConstruct
+    private void verifyInit() {
+        if (callbackSuccess == null) {
+            System.err.println("Error finding auth callback url; please set this in your environment variables!");
+        }
+    }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		String s = request.getParameter("dummyUserName");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String s = request.getParameter("dummyUserName");
 
-		if (s == null) {
-			s = "AnonymousUser";
-		}
+        if (s == null) {
+            s = "AnonymousUser";
+        }
 
-		Map<String, String> claims = new HashMap<String, String>();
+        Map<String, String> claims = new HashMap<String, String>();
 
-		claims.put("id", "dummy." + s);
-		claims.put("name", s);
+        claims.put("id", "dummy." + s);
+        claims.put("name", s);
 
-		String newJwt = createJwt(claims);
+        String newJwt = createJwt(claims);
 
-		// debug.
-		System.out.println("New User Authed: " + claims.get("id"));
+        // debug.
+        System.out.println("New User Authed: " + claims.get("id"));
 
-		response.sendRedirect(callbackSuccess + "/" + newJwt);
+        response.sendRedirect(callbackSuccess + "/" + newJwt);
 
-	}
+    }
 
 }

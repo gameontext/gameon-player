@@ -48,119 +48,119 @@ import com.mongodb.DBObject;
  */
 @Path("/{id}")
 public class PlayerResource {
-	@Context
-	HttpServletRequest httpRequest;
+    @Context
+    HttpServletRequest httpRequest;
 
-	@Context
-	Providers ps;
+    @Context
+    Providers ps;
 
-	@Resource(name = "mongo/playerDB")
-	protected DB playerDB;
+    @Resource(name = "mongo/playerDB")
+    protected DB playerDB;
 
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
 
-		// set by the auth filter.
-		String authId = (String) httpRequest.getAttribute("player.id");
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
 
-		// only allow get for matching id.
-		if (authId == null || !authId.equals(id)) {
-			throw new RequestNotAllowedForThisIDException("Bad authentication id");
-		}
+        // only allow get for matching id.
+        if (authId == null || !authId.equals(id)) {
+            throw new RequestNotAllowedForThisIDException("Bad authentication id");
+        }
 
-		DBObject player = findPlayer(null, id);
-		Player p = Player.fromDBObject(ps, player);
-		return p;
-	}
+        DBObject player = findPlayer(null, id);
+        Player p = Player.fromDBObject(ps, player);
+        return p;
+    }
 
-	@PUT
-	public Response updatePlayer(@PathParam("id") String id, Player newPlayer) throws IOException {
-		// we don't want to allow this method to be invoked by a user.
-		@SuppressWarnings("unchecked")
-		Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
-		if (!"server".equals(claims.get("aud"))) {
-			throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
-		}
+    @PUT
+    public Response updatePlayer(@PathParam("id") String id, Player newPlayer) throws IOException {
+        // we don't want to allow this method to be invoked by a user.
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
+        if (!"server".equals(claims.get("aud"))) {
+            throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
+        }
 
-		DBCollection players = playerDB.getCollection("players");
-		DBObject player = findPlayer(players, id);
-		DBObject nPlayer = newPlayer.toDBObject(ps);
+        DBCollection players = playerDB.getCollection("players");
+        DBObject player = findPlayer(players, id);
+        DBObject nPlayer = newPlayer.toDBObject(ps);
 
-		players.update(player, nPlayer);
-		return Response.status(204).build();
-	}
+        players.update(player, nPlayer);
+        return Response.status(204).build();
+    }
 
-	@DELETE
-	public Response removePlayer(@PathParam("id") String id) {
-		// set by the auth filter.
-		String authId = (String) httpRequest.getAttribute("player.id");
+    @DELETE
+    public Response removePlayer(@PathParam("id") String id) {
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
 
-		// players are allowed to delete themselves..
-		// only allow delete for matching id.
-		if (authId == null || !authId.equals(id)) {
-			return Response.status(403).entity("Bad authentication id").build();
-		}
+        // players are allowed to delete themselves..
+        // only allow delete for matching id.
+        if (authId == null || !authId.equals(id)) {
+            return Response.status(403).entity("Bad authentication id").build();
+        }
 
-		DBCollection players = playerDB.getCollection("players");
-		DBObject player = findPlayer(players, id);
+        DBCollection players = playerDB.getCollection("players");
+        DBObject player = findPlayer(players, id);
 
-		players.remove(player);
-		return Response.status(200).build();
-	}
+        players.remove(player);
+        return Response.status(200).build();
+    }
 
-	@PUT
-	@Path("/location")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response updatePlayerLocation(@PathParam("id") String id, JsonObject update) throws IOException {
-		// we don't want to allow this method to be invoked by a user.
-		@SuppressWarnings("unchecked")
-		Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
-		if (!"server".equals(claims.get("aud"))) {
-			throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
-		}
+    @PUT
+    @Path("/location")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updatePlayerLocation(@PathParam("id") String id, JsonObject update) throws IOException {
+        // we don't want to allow this method to be invoked by a user.
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
+        if (!"server".equals(claims.get("aud"))) {
+            throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
+        }
 
-		DBCollection players = playerDB.getCollection("players");
-		DBObject player = findPlayer(players, id);
-		Player p = Player.fromDBObject(ps, player);
+        DBCollection players = playerDB.getCollection("players");
+        DBObject player = findPlayer(players, id);
+        Player p = Player.fromDBObject(ps, player);
 
-		String oldLocation = update.getString("old");
-		String newLocation = update.getString("new");
-		String currentLocation = p.getLocation();
+        String oldLocation = update.getString("old");
+        String newLocation = update.getString("new");
+        String currentLocation = p.getLocation();
 
-		// try setting to the new location
-		int rc;
-		JsonObjectBuilder result = Json.createObjectBuilder();
+        // try setting to the new location
+        int rc;
+        JsonObjectBuilder result = Json.createObjectBuilder();
 
-		if (currentLocation.equals(oldLocation)) {
-			p.setLocation(newLocation);
-			try {
-				players.update(player, p.toDBObject(ps));
-				rc = 200;
-				result.add("location", newLocation);
-			} catch (IOException e) {
-				rc = 500;
-				result.add("location", currentLocation);
-			}
-		} else {
-			rc = 409;
-			result.add("location", currentLocation);
-		}
+        if (currentLocation.equals(oldLocation)) {
+            p.setLocation(newLocation);
+            try {
+                players.update(player, p.toDBObject(ps));
+                rc = 200;
+                result.add("location", newLocation);
+            } catch (IOException e) {
+                rc = 500;
+                result.add("location", currentLocation);
+            }
+        } else {
+            rc = 409;
+            result.add("location", currentLocation);
+        }
 
-		return Response.status(rc).entity(result.build()).build();
-	}
+        return Response.status(rc).entity(result.build()).build();
+    }
 
-	private DBObject findPlayer(DBCollection players, String id) {
-		if (players == null) {
-			players = playerDB.getCollection("players");
-		}
-		DBObject query = new BasicDBObject("id", id);
-		DBCursor cursor = players.find(query);
-		if (!cursor.hasNext()) {
-			// will be mapped to 404 by the PlayerExceptionMapper
-			throw new PlayerNotFoundException("user id not found : " + id);
-		}
-		return cursor.one();
-	}
+    private DBObject findPlayer(DBCollection players, String id) {
+        if (players == null) {
+            players = playerDB.getCollection("players");
+        }
+        DBObject query = new BasicDBObject("id", id);
+        DBCursor cursor = players.find(query);
+        if (!cursor.hasNext()) {
+            // will be mapped to 404 by the PlayerExceptionMapper
+            throw new PlayerNotFoundException("user id not found : " + id);
+        }
+        return cursor.one();
+    }
 }

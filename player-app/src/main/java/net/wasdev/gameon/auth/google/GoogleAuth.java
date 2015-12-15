@@ -40,45 +40,45 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 @WebServlet("/GoogleAuth")
 public class GoogleAuth extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Resource(lookup = "googleOAuthConsumerKey")
-	String key;
-	@Resource(lookup = "googleOAuthConsumerSecret")
-	String secret;
+    @Resource(lookup = "googleOAuthConsumerKey")
+    String key;
+    @Resource(lookup = "googleOAuthConsumerSecret")
+    String secret;
 
-	public GoogleAuth() {
-	}
+    public GoogleAuth() {
+    }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-		JsonFactory jsonFactory = new JacksonFactory();
-		HttpTransport httpTransport = new NetHttpTransport();
+        JsonFactory jsonFactory = new JacksonFactory();
+        HttpTransport httpTransport = new NetHttpTransport();
 
-		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow(
-				httpTransport, 
-				jsonFactory, 
-				key, 
-				secret,
-				Arrays.asList("https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"));
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow(
+                httpTransport, 
+                jsonFactory, 
+                key, 
+                secret,
+                Arrays.asList("https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"));
 
-		try {
-			// google will tell the users browser to go to this address once
-			// they are done authing.
-			StringBuffer callbackURL = request.getRequestURL();
-			int index = callbackURL.lastIndexOf("/");
-			callbackURL.replace(index, callbackURL.length(), "").append("/GoogleCallback");
-			request.getSession().setAttribute("google", flow);
+        try {
+            // google will tell the users browser to go to this address once
+            // they are done authing.
+            StringBuffer callbackURL = request.getRequestURL();
+            int index = callbackURL.lastIndexOf("/");
+            callbackURL.replace(index, callbackURL.length(), "").append("/GoogleCallback");
+            request.getSession().setAttribute("google", flow);
 
-			String authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(callbackURL.toString()).build();
-			// send the user to google to be authenticated.
-			response.sendRedirect(authorizationUrl);
+            String authorizationUrl = flow.newAuthorizationUrl().setRedirectUri(callbackURL.toString()).build();
+            // send the user to google to be authenticated.
+            response.sendRedirect(authorizationUrl);
 
-		} catch (Exception e) {
-			throw new ServletException(e);
-		}
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
 
-	}
+    }
 
 }

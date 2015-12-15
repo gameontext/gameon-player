@@ -32,31 +32,31 @@ import com.restfb.scope.ScopeBuilder;
 
 @WebServlet("/FacebookAuth")
 public class FacebookAuth extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Resource(lookup = "facebookAppID")
-	String facebookAppId;
+    @Resource(lookup = "facebookAppID")
+    String facebookAppId;
 
-	public FacebookAuth() {
-	}
+    public FacebookAuth() {
+    }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-		ScopeBuilder scopeBuilder = new ScopeBuilder();
-		scopeBuilder.addPermission(ExtendedPermissions.EMAIL);
+        ScopeBuilder scopeBuilder = new ScopeBuilder();
+        scopeBuilder.addPermission(ExtendedPermissions.EMAIL);
 
-		// tell facebook to send the user to this address once they have
-		// authenticated.
-		StringBuffer callbackURL = request.getRequestURL();
-		int index = callbackURL.lastIndexOf("/");
-		callbackURL.replace(index, callbackURL.length(), "").append("/FacebookCallback");
+        // tell facebook to send the user to this address once they have
+        // authenticated.
+        StringBuffer callbackURL = request.getRequestURL();
+        int index = callbackURL.lastIndexOf("/");
+        callbackURL.replace(index, callbackURL.length(), "").append("/FacebookCallback");
 
-		FacebookClient client = new DefaultFacebookClient(Version.VERSION_2_5);
-		String loginUrl = client.getLoginDialogUrl(facebookAppId, callbackURL.toString(), scopeBuilder);
+        FacebookClient client = new DefaultFacebookClient(Version.VERSION_2_5);
+        String loginUrl = client.getLoginDialogUrl(facebookAppId, callbackURL.toString(), scopeBuilder);
 
-		// redirect the user to facebook to be authenticated.
-		response.sendRedirect(loginUrl);
-	}
+        // redirect the user to facebook to be authenticated.
+        response.sendRedirect(loginUrl);
+    }
 
 }
