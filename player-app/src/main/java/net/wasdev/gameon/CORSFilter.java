@@ -27,16 +27,16 @@ import javax.servlet.http.HttpServletResponse;
 
 public class CORSFilter implements Filter {
 
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
-		HttpServletResponse sresponse = (HttpServletResponse) response;
-		sresponse.setHeader("Access-Control-Allow-Origin", "*");
-		chain.doFilter(request, response);
-	}
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletResponse sresponse = (HttpServletResponse) response;
+        sresponse.setHeader("Access-Control-Allow-Origin", "*");
+        chain.doFilter(request, response);
+    }
 
-	public void init(FilterConfig filterConfig) {
-	}
+    public void init(FilterConfig filterConfig) {
+    }
 
-	public void destroy() {
-	}
+    public void destroy() {
+    }
 }

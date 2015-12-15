@@ -43,58 +43,58 @@ import com.mongodb.DBObject;
  */
 @Path("/")
 public class AllPlayersResource {
-	@Context
-	HttpServletRequest httpRequest;
+    @Context
+    HttpServletRequest httpRequest;
 
-	@Context
-	Providers ps;
+    @Context
+    Providers ps;
 
-	@Resource(name = "mongo/playerDB")
-	protected DB playerDB;
+    @Resource(name = "mongo/playerDB")
+    protected DB playerDB;
 
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public List<Player> getAllPlayers() throws IOException {
-		// TODO: wrap this in a reactive / lazy stream
-		DBCollection players = playerDB.getCollection("players");
-		DBObject query = null;
-		DBCursor cursor = players.find(query);
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Player> getAllPlayers() throws IOException {
+        // TODO: wrap this in a reactive / lazy stream
+        DBCollection players = playerDB.getCollection("players");
+        DBObject query = null;
+        DBCursor cursor = players.find(query);
 
-		List<Player> results = new ArrayList<Player>();
-		for (DBObject player : cursor) {
-			Player p = Player.fromDBObject(ps, player);
-			results.add(p);
-		}
+        List<Player> results = new ArrayList<Player>();
+        for (DBObject player : cursor) {
+            Player p = Player.fromDBObject(ps, player);
+            results.add(p);
+        }
 
-		return results;
-	}
+        return results;
+    }
 
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response createPlayer(Player player) throws IOException {
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response createPlayer(Player player) throws IOException {
 
-		// set by the auth filter.
-		String authId = (String) httpRequest.getAttribute("player.id");
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
 
-		// only allow create for matching id.
-		if (authId == null || !authId.equals(player.getId())) {
-			return Response.status(403).entity("Bad authentication id").build();
-		}
+        // only allow create for matching id.
+        if (authId == null || !authId.equals(player.getId())) {
+            return Response.status(403).entity("Bad authentication id").build();
+        }
 
-		DBCollection players = playerDB.getCollection("players");
-		DBObject query = new BasicDBObject("id", player.getId());
-		DBCursor cursor = players.find(query);
+        DBCollection players = playerDB.getCollection("players");
+        DBObject query = new BasicDBObject("id", player.getId());
+        DBCursor cursor = players.find(query);
 
-		if (cursor.hasNext()) {
-			return Response.status(409).entity("Error player : " + player.getName() + " already exists").build();
-		}
+        if (cursor.hasNext()) {
+            return Response.status(409).entity("Error player : " + player.getName() + " already exists").build();
+        }
 
-		System.out.println("player " + player.toString());
+        System.out.println("player " + player.toString());
 
-		System.out.println("ps == null? " + (null == ps));
-		DBObject playerToStore = player.toDBObject(ps);
-		players.insert(playerToStore);
+        System.out.println("ps == null? " + (null == ps));
+        DBObject playerToStore = player.toDBObject(ps);
+        players.insert(playerToStore);
 
-		return Response.status(201).build();
-	}
+        return Response.status(201).build();
+    }
 }

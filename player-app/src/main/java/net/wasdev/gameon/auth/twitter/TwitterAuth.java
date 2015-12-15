@@ -33,46 +33,46 @@ import twitter4j.conf.ConfigurationBuilder;
 
 @WebServlet("/TwitterAuth")
 public class TwitterAuth extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Resource(lookup = "twitterOAuthConsumerKey")
-	String key;
-	@Resource(lookup = "twitterOAuthConsumerSecret")
-	String secret;
+    @Resource(lookup = "twitterOAuthConsumerKey")
+    String key;
+    @Resource(lookup = "twitterOAuthConsumerSecret")
+    String secret;
 
-	public TwitterAuth() {
-	}
+    public TwitterAuth() {
+    }
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-		ConfigurationBuilder c = new ConfigurationBuilder();
-		c.setOAuthConsumerKey(key).setOAuthConsumerSecret(secret);
+        ConfigurationBuilder c = new ConfigurationBuilder();
+        c.setOAuthConsumerKey(key).setOAuthConsumerSecret(secret);
 
-		Twitter twitter = new TwitterFactory(c.build()).getInstance();
-		request.getSession().setAttribute("twitter", twitter);
+        Twitter twitter = new TwitterFactory(c.build()).getInstance();
+        request.getSession().setAttribute("twitter", twitter);
 
-		try {
-			// twitter will tell the users browser to go to this address once
-			// they are done authing.
-			StringBuffer callbackURL = request.getRequestURL();
-			int index = callbackURL.lastIndexOf("/");
-			callbackURL.replace(index, callbackURL.length(), "").append("/TwitterCallback");
+        try {
+            // twitter will tell the users browser to go to this address once
+            // they are done authing.
+            StringBuffer callbackURL = request.getRequestURL();
+            int index = callbackURL.lastIndexOf("/");
+            callbackURL.replace(index, callbackURL.length(), "").append("/TwitterCallback");
 
-			// to initiate an auth request, twitter needs us to have a request
-			// token.
-			RequestToken requestToken = twitter.getOAuthRequestToken(callbackURL.toString());
+            // to initiate an auth request, twitter needs us to have a request
+            // token.
+            RequestToken requestToken = twitter.getOAuthRequestToken(callbackURL.toString());
 
-			// stash the request token in the session.
-			request.getSession().setAttribute("requestToken", requestToken);
+            // stash the request token in the session.
+            request.getSession().setAttribute("requestToken", requestToken);
 
-			// send the user to twitter to be authenticated.
-			response.sendRedirect(requestToken.getAuthenticationURL());
+            // send the user to twitter to be authenticated.
+            response.sendRedirect(requestToken.getAuthenticationURL());
 
-		} catch (TwitterException e) {
-			throw new ServletException(e);
-		}
+        } catch (TwitterException e) {
+            throw new ServletException(e);
+        }
 
-	}
+    }
 
 }

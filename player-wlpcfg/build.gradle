@@ -1,55 +1,55 @@
 apply plugin: 'eclipse'
 
 buildscript {
-	repositories {
-	    mavenCentral()
-	}
+    repositories {
+        mavenCentral()
+    }
 
-	dependencies {
-		classpath 'com.bmuschko:gradle-docker-plugin:2.6'
-	}
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:2.6'
+    }
 }
 
 def dockerHost = "https://localhost:2376"
 if (null != System.getenv("DOCKER_HOST"))
 {
-	dockerHost = System.getenv('DOCKER_HOST')
+    dockerHost = System.getenv('DOCKER_HOST')
 
-	if (dockerHost.indexOf('tcp') == 0)
-	{
-		dockerHost = dockerHost.replace('tcp','https')
-	}
+    if (dockerHost.indexOf('tcp') == 0)
+    {
+        dockerHost = dockerHost.replace('tcp','https')
+    }
 }
 
 def dockerCertPath = ""
 if (null != System.getenv('DOCKER_CERT_PATH')){
-	dockerCertPath = System.getenv('DOCKER_CERT_PATH')
+    dockerCertPath = System.getenv('DOCKER_CERT_PATH')
 }
 
 def determinedEnvironment = ["LICENSE=accept",
-			"CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
-			"CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
-			"MONGO_HOST=" + System.getenv('MONGO_HOST'),
-			"MONGO_PORT=" + System.getenv('MONGO_PORT'),
-			"TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
-			"TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
-			"FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
-			"FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
-			"GOOGLE_APP_ID=" + System.getenv('GOOGLE_APP_ID'),
-			"GOOGLE_APP_SECRET=" + System.getenv('GOOGLE_APP_SECRET'),
-			"SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
-			"PLAYER_URL=" + System.getenv('PLAYER_URL')
-		]
+            "CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
+            "CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
+            "MONGO_HOST=" + System.getenv('MONGO_HOST'),
+            "MONGO_PORT=" + System.getenv('MONGO_PORT'),
+            "TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
+            "TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
+            "FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
+            "FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
+            "GOOGLE_APP_ID=" + System.getenv('GOOGLE_APP_ID'),
+            "GOOGLE_APP_SECRET=" + System.getenv('GOOGLE_APP_SECRET'),
+            "SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
+            "PLAYER_URL=" + System.getenv('PLAYER_URL')
+        ]
 if (null != System.getenv("LOGSTASH_ENDPOINT"))
 {
-	determinedEnvironment << "LOGSTASH_ENDPOINT=" + System.getenv("LOGSTASH_ENDPOINT")
-	determinedEnvironment << "LOGSTASH_KEY=" + System.getenv("LOGSTASH_KEY")
-	determinedEnvironment << "LOGSTASH_CERT=" + System.getenv("LOGSTASH_CERT")
+    determinedEnvironment << "LOGSTASH_ENDPOINT=" + System.getenv("LOGSTASH_ENDPOINT")
+    determinedEnvironment << "LOGSTASH_KEY=" + System.getenv("LOGSTASH_KEY")
+    determinedEnvironment << "LOGSTASH_CERT=" + System.getenv("LOGSTASH_CERT")
 }
 
 if (null != System.getenv("SSL_CERT"))
 {
-	determinedEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
+    determinedEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
 }
 
 task copyWAR(type: Copy) {
@@ -72,12 +72,12 @@ import com.bmuschko.gradle.docker.tasks.container.*
 import com.bmuschko.gradle.docker.tasks.image.*
 
 docker {
-	  url = dockerHost
+      url = dockerHost
     certPath = new File(dockerCertPath)
 }
 
 task buildDockerImage(type: DockerBuildImage, dependsOn: ['copyWAR','copyMongo']) {
-	inputDir = file('.')
+    inputDir = file('.')
     tag = 'gameon-player'
     quiet = false
 }
@@ -88,17 +88,17 @@ task stopCurrentContainer(type: DockerStopContainer) {
 }
 
 task removeCurrentContainer(type: DockerRemoveContainer) {
-	targetContainerId { "gameon-player" }
+    targetContainerId { "gameon-player" }
 }
 
 task createNewContainer(type: DockerCreateContainer) {
-	targetImageId { "gameon-player" }
-	containerName = "gameon-player"
-	portBindings = ['9443:9443']
-	env = determinedEnvironment
+    targetImageId { "gameon-player" }
+    containerName = "gameon-player"
+    portBindings = ['9443:9443']
+    env = determinedEnvironment
 }
 
 task startNewContainer(type: DockerStartContainer) {
-	dependsOn createNewContainer
-	targetContainerId { "gameon-player" }
+    dependsOn createNewContainer
+    targetContainerId { "gameon-player" }
 }

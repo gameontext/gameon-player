@@ -44,98 +44,98 @@ import net.wasdev.gameon.auth.JwtAuth;
  */
 @WebServlet("/GoogleCallback")
 public class GoogleCallback extends JwtAuth {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Resource(lookup = "googleOAuthConsumerKey")
-	String key;
-	@Resource(lookup = "googleOAuthConsumerSecret")
-	String secret;
-	@Resource(lookup = "authCallbcakURLSuccess")
-	String callbackSuccess;
+    @Resource(lookup = "googleOAuthConsumerKey")
+    String key;
+    @Resource(lookup = "googleOAuthConsumerSecret")
+    String secret;
+    @Resource(lookup = "authCallbcakURLSuccess")
+    String callbackSuccess;
 
-	private GoogleAuthorizationCodeFlow flow = null;
+    private GoogleAuthorizationCodeFlow flow = null;
 
-	public GoogleCallback() {
-		super();
-	}
+    public GoogleCallback() {
+        super();
+    }
 
-	@PostConstruct
-	private void verifyInit() {
-		if (callbackSuccess == null) {
-			System.err.println("Error finding webapp base URL; please set this in your environment variables!");
-		}
-	}
+    @PostConstruct
+    private void verifyInit() {
+        if (callbackSuccess == null) {
+            System.err.println("Error finding webapp base URL; please set this in your environment variables!");
+        }
+    }
 
-	/**
-	 * Method that performs introspection on an AUTH string, and returns data as
-	 * a String->String hashmap.
-	 * 
-	 * @param auth
-	 *            the authstring to query, as built by an auth impl.
-	 * @return the data from the introspect, in a map.
-	 * @throws IOException
-	 *             if anything goes wrong.
-	 */
-	public Map<String, String> introspectAuth(GoogleTokenResponse gResponse) throws IOException {
-		Map<String, String> results = new HashMap<String, String>();
+    /**
+     * Method that performs introspection on an AUTH string, and returns data as
+     * a String->String hashmap.
+     * 
+     * @param auth
+     *            the authstring to query, as built by an auth impl.
+     * @return the data from the introspect, in a map.
+     * @throws IOException
+     *             if anything goes wrong.
+     */
+    public Map<String, String> introspectAuth(GoogleTokenResponse gResponse) throws IOException {
+        Map<String, String> results = new HashMap<String, String>();
 
-		Credential credential = flow.createAndStoreCredential(gResponse, null);
+        Credential credential = flow.createAndStoreCredential(gResponse, null);
 
-		try {
-			// ask google to verify the response from the auth string
-			// if invalid, it'll throw an exception
-			HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(credential);
-			GenericUrl url = new GenericUrl("https://www.googleapis.com/oauth2/v1/userinfo");
-			HttpRequest infoRequest = requestFactory.buildGetRequest(url);
+        try {
+            // ask google to verify the response from the auth string
+            // if invalid, it'll throw an exception
+            HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory(credential);
+            GenericUrl url = new GenericUrl("https://www.googleapis.com/oauth2/v1/userinfo");
+            HttpRequest infoRequest = requestFactory.buildGetRequest(url);
 
-			infoRequest.getHeaders().setContentType("application/json");
-			String jsonIdentity = infoRequest.execute().parseAsString();
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode user = objectMapper.readTree(jsonIdentity);
-			String id = user.get("id").asText();
-			String name = user.get("name").asText();
-			String screenname = user.get("email").asText();
+            infoRequest.getHeaders().setContentType("application/json");
+            String jsonIdentity = infoRequest.execute().parseAsString();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode user = objectMapper.readTree(jsonIdentity);
+            String id = user.get("id").asText();
+            String name = user.get("name").asText();
+            String screenname = user.get("email").asText();
 
-			results.put("valid", "true");
-			results.put("id", "google:" + id);
-			results.put("name", name);
-			results.put("screenname", screenname);
+            results.put("valid", "true");
+            results.put("id", "google:" + id);
+            results.put("name", name);
+            results.put("screenname", screenname);
 
-		} catch (Exception e) {
-			results.put("valid", "false");
-		}
+        } catch (Exception e) {
+            results.put("valid", "false");
+        }
 
-		return results;
-	}
+        return results;
+    }
 
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		// google calls us back at this app when a user has finished authing
-		// with them.
-		// when it calls us back here, it passes an oauth_verifier token that we
-		// can exchange
-		// for a google access token.
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // google calls us back at this app when a user has finished authing
+        // with them.
+        // when it calls us back here, it passes an oauth_verifier token that we
+        // can exchange
+        // for a google access token.
 
-		flow = (GoogleAuthorizationCodeFlow) request.getSession().getAttribute("google");
-		String code = request.getParameter("code");
+        flow = (GoogleAuthorizationCodeFlow) request.getSession().getAttribute("google");
+        String code = request.getParameter("code");
 
-		StringBuffer callbackURL = request.getRequestURL();
-		int index = callbackURL.lastIndexOf("/");
-		callbackURL.replace(index, callbackURL.length(), "").append("/GoogleCallback");
+        StringBuffer callbackURL = request.getRequestURL();
+        int index = callbackURL.lastIndexOf("/");
+        callbackURL.replace(index, callbackURL.length(), "").append("/GoogleCallback");
 
-		GoogleTokenResponse gResponse = flow.newTokenRequest(code).setRedirectUri(callbackURL.toString()).execute();
-		Map<String, String> claims = introspectAuth(gResponse);
+        GoogleTokenResponse gResponse = flow.newTokenRequest(code).setRedirectUri(callbackURL.toString()).execute();
+        Map<String, String> claims = introspectAuth(gResponse);
 
-		// if auth key was no longer valid, we won't build a jwt. redirect back
-		// to start.
-		if (!"true".equals(claims.get("valid"))) {
-			response.sendRedirect("http://game-on.org/#/game");
-		} else {
-			String newJwt = createJwt(claims);
+        // if auth key was no longer valid, we won't build a jwt. redirect back
+        // to start.
+        if (!"true".equals(claims.get("valid"))) {
+            response.sendRedirect("http://game-on.org/#/game");
+        } else {
+            String newJwt = createJwt(claims);
 
-			System.out.println("New User Authed: " + claims.get("id"));
-			response.sendRedirect(callbackSuccess + "/" + newJwt);
-		}
-	}
+            System.out.println("New User Authed: " + claims.get("id"));
+            response.sendRedirect(callbackSuccess + "/" + newJwt);
+        }
+    }
 }
