@@ -23,6 +23,6 @@ cd player-wlpcfg
 ../gradlew buildDockerImage 
 ../gradlew stopCurrentContainer 
 ../gradlew removeCurrentContainer
-../gradlew startNewContainer
+../gradlew startNewEtcdContainer
 
 rm -rf dockercfg

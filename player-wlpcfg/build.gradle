@@ -26,7 +26,7 @@ if (null != System.getenv('DOCKER_CERT_PATH')){
     dockerCertPath = System.getenv('DOCKER_CERT_PATH')
 }
 
-def determinedEnvironment = ["LICENSE=accept",
+def localEnvironment = ["LICENSE=accept",
             "CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
             "CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
             "MONGO_HOST=" + System.getenv('MONGO_HOST'),
@@ -40,17 +40,13 @@ def determinedEnvironment = ["LICENSE=accept",
             "SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
             "PLAYER_URL=" + System.getenv('PLAYER_URL')
         ]
-if (null != System.getenv("LOGSTASH_ENDPOINT"))
-{
-    determinedEnvironment << "LOGSTASH_ENDPOINT=" + System.getenv("LOGSTASH_ENDPOINT")
-    determinedEnvironment << "LOGSTASH_KEY=" + System.getenv("LOGSTASH_KEY")
-    determinedEnvironment << "LOGSTASH_CERT=" + System.getenv("LOGSTASH_CERT")
-}
 
 if (null != System.getenv("SSL_CERT"))
 {
-    determinedEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
+    localEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
 }
+
+def etcdEnvironment = ["LICENSE=accept", "ETCDCTL_ENDPOINT=http://etcd:4001"]
 
 task copyWAR(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
@@ -95,10 +91,24 @@ task createNewContainer(type: DockerCreateContainer) {
     targetImageId { "gameon-player" }
     containerName = "gameon-player"
     portBindings = ['9443:9443']
-    env = determinedEnvironment
+    env = localEnvironment
 }
 
 task startNewContainer(type: DockerStartContainer) {
     dependsOn createNewContainer
+    targetContainerId { "gameon-player" }
+}
+
+
+task createNewEtcdContainer(type: DockerCreateContainer) {
+    targetImageId { "gameon-player" }
+    containerName = "gameon-player"
+    portBindings = ['9443:9443']
+    env = etcdEnvironment
+    links = ['etcd:etcd']
+}
+
+task startNewEtcdContainer(type: DockerStartContainer) {
+    dependsOn createNewEtcdContainer
     targetContainerId { "gameon-player" }
 }
