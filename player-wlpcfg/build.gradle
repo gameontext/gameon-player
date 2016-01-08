@@ -55,8 +55,9 @@ task copyWAR(type: Copy) {
 }
 
 task copyMongo(type: Copy) {
-    from '../player-app/build/libs/mongo-java-driver-2.12.3.jar'
+    from '../player-app/build/libs/'
     into 'servers/gameon-player/lib/'
+    exclude 'player*'
 }
 
 task build(dependsOn: ['copyWAR', 'copyMongo']){
