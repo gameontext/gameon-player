@@ -23,7 +23,7 @@
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore" />
 
   <library id="MongoLib">
-    <file name="lib/mongo-java-driver-2.12.3.jar"/>
+    <fileset dir='${server.config.dir}/lib' />
   </library>
 
   <mongo id="mongo" libraryRef="MongoLib" hostNames="${env.MONGO_HOST}" ports="${env.MONGO_PORT}" />
