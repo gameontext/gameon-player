@@ -5,7 +5,6 @@ sourceCompatibility = 1.8
 
 configurations {
     mongo
-    slf4j
 }
 
 dependencies {
@@ -21,10 +20,6 @@ dependencies {
     mongo 'org.mongodb:mongo-java-driver:2.12.3'
     providedCompile configurations.mongo
 
-    // route ektorp slf4j logs to java.util.logging configured by Liberty in server.xml
-    slf4j 'org.slf4j:slf4j-jdk14:1.7.13'
-    providedCompile configurations.slf4j
-
     compile 'org.twitter4j:twitter4j-core:4.0.4'
 
     compile 'com.restfb:restfb:1.15.0'
@@ -33,12 +28,12 @@ dependencies {
     compile 'com.google.api-client:google-api-client:1.19.1'
 
     compile group:'io.jsonwebtoken', name:'jjwt', version:'0.5.1'
+    runtime 'org.slf4j:slf4j-jdk14:1.7.13'
 }
 
 task exportLibs(type: Copy) {
   into "$buildDir/libs/"
   from configurations.mongo
-  from configurations.slf4j
 }
 
 build.dependsOn(exportLibs)
