@@ -67,7 +67,7 @@ public class TwitterAuth extends HttpServlet {
             }catch(Exception ee){
                 if(key==null){ key="null"; }
                 if(secret==null){ secret="null"; }
-                throw new ServletException(ee.getMessage()
+                throw new TwitterException(ee.getMessage()
                 +" "
                 +(key.substring(2))
                 +"::"
