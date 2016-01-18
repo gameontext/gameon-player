@@ -61,23 +61,7 @@ public class TwitterAuth extends HttpServlet {
 
             // to initiate an auth request, twitter needs us to have a request
             // token.
-            RequestToken requestToken = null;
-            try{
-                requestToken = twitter.getOAuthRequestToken(callbackURL.toString());
-            }catch(Exception ee){
-                if(key==null){ key="null"; }
-                if(secret==null){ secret="null"; }
-                throw new TwitterException(ee.getMessage()
-                +" "
-                +(key.substring(2))
-                +"::"
-                +key.length()
-                +"--"
-                +(secret.substring(2))
-                +"::"
-                +secret.length()
-                ,ee);
-            }
+            RequestToken requestToken = twitter.getOAuthRequestToken(callbackURL.toString());
 
             // stash the request token in the session.
             request.getSession().setAttribute("requestToken", requestToken);
