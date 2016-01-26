@@ -15,45 +15,32 @@
  *******************************************************************************/
 package net.wasdev.gameon.player;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.Base64.Encoder;
+import java.util.UUID;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Providers;
+import org.ektorp.support.CouchDbDocument;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Player {
+@JsonInclude(Include.NON_EMPTY)
+public class Player extends CouchDbDocument{
 
-    private String id;
+    private static final long serialVersionUID = 1L;
+   
     private String name;
+    private String apiKey;
     private String authBy;
     private String location;
     private String favoriteColor;
-
-    // default constructor, required for jax-rs to use when creating instances
-    // of pojo
-    public Player() {
-    }
-
-    public Player(String id, String name, String authBy, String location, String favoriteColor) {
-        this.id = id;
-        this.name = name;
-        this.authBy = authBy;
-        this.location = location;
-        this.favoriteColor = favoriteColor;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    
+    @JsonCreator
+    public Player() {}
 
     public String getName() {
         return name;
@@ -61,6 +48,14 @@ public class Player {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     public String getAuthBy() {
@@ -87,32 +82,23 @@ public class Player {
         this.favoriteColor = favoriteColor;
     }
 
-    // TODO: use id as _id
-
     @Override
     public String toString() {
-        return "Player [id=" + id + ", name=" + name + ", authBy=" + authBy + ", location=" + location
+        return "Player [id=" + getId() + ", revision=" + getRevision() +", name=" + name + ", authBy=" + authBy + ", location=" + location
                 + ", favoriteColor=" + favoriteColor + "]";
     }
-
-    static public Player fromDBObject(Providers ps, DBObject player) throws IOException {
-        DBObject p2 = new BasicDBObject();
-        p2.putAll(player);
-        p2.removeField("_id");
-
-        Player p = ps.getMessageBodyReader(Player.class, null, null, MediaType.APPLICATION_JSON_TYPE).readFrom(
-                Player.class, Player.class, null, MediaType.APPLICATION_JSON_TYPE, null,
-                new ByteArrayInputStream(p2.toString().getBytes()));
-        return p;
-    }
-
-    public DBObject toDBObject(Providers ps) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ps.getMessageBodyWriter(Player.class, null, null, MediaType.APPLICATION_JSON_TYPE).writeTo(this, Player.class,
-                null, null, MediaType.APPLICATION_JSON_TYPE, null, baos);
-        String json = baos.toString();// default charset.
-        DBObject playerToStore = (DBObject) JSON.parse(json);
-        return playerToStore;
+    
+    //package visibility so can be invoked from places loading object
+    @JsonIgnore
+    void generateApiKey(){
+        Encoder e = Base64.getEncoder();
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16*2]);
+        for(int i=0;i<2; i++){
+            UUID u = UUID.randomUUID();
+            bb.putLong(u.getMostSignificantBits());
+            bb.putLong(u.getLeastSignificantBits());
+        }
+        setApiKey(e.encodeToString(bb.array()));
     }
 
 }

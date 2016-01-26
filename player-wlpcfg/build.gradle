@@ -54,13 +54,13 @@ task copyWAR(type: Copy) {
     rename("player-app-1.0.war", "player-app.war")
 }
 
-task copyMongo(type: Copy) {
+task copyLibs(type: Copy) {
     from '../player-app/build/libs/'
     into 'servers/gameon-player/lib/'
     exclude 'player*'
 }
 
-task build(dependsOn: ['copyWAR', 'copyMongo']){
+task build(dependsOn: ['copyWAR', 'copyLibs']){
 }
 
 apply plugin: 'com.bmuschko.docker-remote-api'
@@ -73,7 +73,7 @@ docker {
     certPath = new File(dockerCertPath)
 }
 
-task buildDockerImage(type: DockerBuildImage, dependsOn: ['copyWAR','copyMongo']) {
+task buildDockerImage(type: DockerBuildImage, dependsOn: ['copyWAR','copyLibs']) {
     inputDir = file('.')
     tag = 'gameon-player'
     quiet = false

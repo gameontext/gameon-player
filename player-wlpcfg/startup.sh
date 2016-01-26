@@ -26,6 +26,9 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   keytool -delete -storepass testOnlyKeystore -alias endeca -keystore security/key.jks
   keytool -v -importkeystore -srcalias 1 -alias 1 -destalias default -noprompt -srcstorepass keystore -deststorepass testOnlyKeystore -srckeypass keystore -destkeypass testOnlyKeystore -srckeystore cert.pkcs12 -srcstoretype PKCS12 -destkeystore security/key.jks -deststoretype JKS
 
+  export COUCHDB_URL=$(etcdctl get /couchdb/url)
+  export COUCHDB_USER=$(etcdctl get /couchdb/user)
+  export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
   export CONCIERGE_URL=$(etcdctl get /concierge/url)
   export CONCIERGE_KEY=$(etcdctl get /passwords/concierge-key)
   export PLAYER_URL=$(etcdctl get /player/url)
@@ -49,5 +52,16 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   sleep 0.5
   ./forwarder --config ./forwarder.conf
 else
+  # LOCAL DEVELOPMENT!
+  # We do not want to ruin the cloudant admin party, but our code is written to expect
+  # that creds are required, so we should make sure the required user/password exist
+  export AUTH_HOST="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@couchdb:5984"
+  curl --fail -v -X GET ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
+  if [ $? -eq 22 ]; then
+      curl -X PUT ${COUCHDB_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
+  fi
+  
+  echo Have setup couchdb with user ${COUCHDB_USER}
+
   /opt/ibm/wlp/bin/server run defaultServer
 fi
