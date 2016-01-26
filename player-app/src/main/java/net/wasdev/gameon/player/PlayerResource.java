@@ -18,7 +18,6 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.Resource;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -33,13 +32,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Providers;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.UpdateConflictException;
 
 /**
  * The Player service, where players remember where they are, and what they have
@@ -50,12 +45,6 @@ import com.mongodb.DBObject;
 public class PlayerResource {
     @Context
     HttpServletRequest httpRequest;
-
-    @Context
-    Providers ps;
-
-    @Resource(name = "mongo/playerDB")
-    protected DB playerDB;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,9 +58,13 @@ public class PlayerResource {
             throw new RequestNotAllowedForThisIDException("Bad authentication id");
         }
 
-        DBObject player = findPlayer(null, id);
-        Player p = Player.fromDBObject(ps, player);
-        return p;
+        CouchDbConnector db = PlayerDbConnector.getConnector();
+        if(db.contains(id)){
+            Player p = db.get(Player.class, id);        
+            return p;
+        }else{
+            throw new PlayerNotFoundException("Id not known");
+        }
     }
 
     @PUT
@@ -82,17 +75,15 @@ public class PlayerResource {
         if (!"server".equals(claims.get("aud"))) {
             throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
         }
+        
+        CouchDbConnector db = PlayerDbConnector.getConnector();
+        db.update(newPlayer);
 
-        DBCollection players = playerDB.getCollection("players");
-        DBObject player = findPlayer(players, id);
-        DBObject nPlayer = newPlayer.toDBObject(ps);
-
-        players.update(player, nPlayer);
         return Response.status(204).build();
     }
 
     @DELETE
-    public Response removePlayer(@PathParam("id") String id) {
+    public Response removePlayer(@PathParam("id") String id) throws IOException{
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
 
@@ -101,11 +92,13 @@ public class PlayerResource {
         if (authId == null || !authId.equals(id)) {
             return Response.status(403).entity("Bad authentication id").build();
         }
-
-        DBCollection players = playerDB.getCollection("players");
-        DBObject player = findPlayer(players, id);
-
-        players.remove(player);
+        
+        CouchDbConnector db = PlayerDbConnector.getConnector();
+        Player p = db.get(Player.class, id);
+        if(p!=null){
+            db.delete(p);
+        }
+        
         return Response.status(200).build();
     }
 
@@ -120,10 +113,9 @@ public class PlayerResource {
         if (!"server".equals(claims.get("aud"))) {
             throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
         }
-
-        DBCollection players = playerDB.getCollection("players");
-        DBObject player = findPlayer(players, id);
-        Player p = Player.fromDBObject(ps, player);
+        
+        CouchDbConnector db = PlayerDbConnector.getConnector();
+        Player p = db.get(Player.class, id);
 
         String oldLocation = update.getString("old");
         String newLocation = update.getString("new");
@@ -136,10 +128,10 @@ public class PlayerResource {
         if (currentLocation.equals(oldLocation)) {
             p.setLocation(newLocation);
             try {
-                players.update(player, p.toDBObject(ps));
+                db.update(p);
                 rc = 200;
                 result.add("location", newLocation);
-            } catch (IOException e) {
+            } catch (UpdateConflictException e) {
                 rc = 500;
                 result.add("location", currentLocation);
             }
@@ -151,16 +143,4 @@ public class PlayerResource {
         return Response.status(rc).entity(result.build()).build();
     }
 
-    private DBObject findPlayer(DBCollection players, String id) {
-        if (players == null) {
-            players = playerDB.getCollection("players");
-        }
-        DBObject query = new BasicDBObject("id", id);
-        DBCursor cursor = players.find(query);
-        if (!cursor.hasNext()) {
-            // will be mapped to 404 by the PlayerExceptionMapper
-            throw new PlayerNotFoundException("user id not found : " + id);
-        }
-        return cursor.one();
-    }
 }

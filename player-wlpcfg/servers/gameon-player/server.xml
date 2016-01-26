@@ -5,7 +5,6 @@
     <feature>websocket-1.1</feature>
     <feature>localConnector-1.0</feature>
     <feature>jaxrs-2.0</feature>
-    <feature>mongodb-2.0</feature>
     <feature>cdi-1.2</feature>
     <feature>ssl-1.0</feature>
     <feature>jsonp-1.0</feature>
@@ -22,12 +21,9 @@
   <sslDefault sslRef="DefaultSSLSettings" />
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore" />
 
-  <library id="MongoLib">
+  <library id="CouchDbLib">
     <fileset dir='${server.config.dir}/lib' />
   </library>
-
-  <mongo id="mongo" libraryRef="MongoLib" hostNames="${env.MONGO_HOST}" ports="${env.MONGO_PORT}" />
-  <mongoDB databaseName="playerDB" jndiName="mongo/playerDB" mongoRef="mongo"/>
 
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
@@ -38,11 +34,8 @@
   <jndiEntry jndiName="jwtKeyStorePassword" value="testOnlyKeystore"/>
   <jndiEntry jndiName="jwtKeyStoreAlias" value="default"/>
 
-  <jndiEntry jndiName="conciergeUrl" value="${env.CONCIERGE_URL}"/>
   <jndiEntry jndiName="authCallbcakURLSuccess" value="${env.SUCCESS_CALLBACK}"/>
   <jndiEntry jndiName="playerUrl" value="${env.PLAYER_URL}"/>
-
-  <jndiEntry jndiName="conciergeQueryApiKey" value="${env.CONCIERGE_KEY}"/>
 
   <logging traceSpecification="*=info:net.wasdev.gameon.*=all" />
 
@@ -61,7 +54,7 @@
   <applicationMonitor dropinsEnabled="false"/>
 
   <webApplication id="player-app" location="player-app.war" name="player-app" contextRoot="/play">
-    <classloader commonLibraryRef="MongoLib"/>
+    <classloader commonLibraryRef="CouchDbLib"/>
   </webApplication>
 
 </server>

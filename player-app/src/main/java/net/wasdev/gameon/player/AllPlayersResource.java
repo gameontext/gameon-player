@@ -16,10 +16,8 @@
 package net.wasdev.gameon.player;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,13 +27,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Providers;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.ViewQuery;
 
 /**
  * All the players, and searching for players.
@@ -46,26 +40,14 @@ public class AllPlayersResource {
     @Context
     HttpServletRequest httpRequest;
 
-    @Context
-    Providers ps;
-
-    @Resource(name = "mongo/playerDB")
-    protected DB playerDB;
-
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Player> getAllPlayers() throws IOException {
-        // TODO: wrap this in a reactive / lazy stream
-        DBCollection players = playerDB.getCollection("players");
-        DBObject query = null;
-        DBCursor cursor = players.find(query);
+        CouchDbConnector db = PlayerDbConnector.getConnector();
 
-        List<Player> results = new ArrayList<Player>();
-        for (DBObject player : cursor) {
-            Player p = Player.fromDBObject(ps, player);
-            results.add(p);
-        }
-
+        ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
+        List<Player> results = db.queryView(q, Player.class);
+        
         return results;
     }
 
@@ -80,20 +62,17 @@ public class AllPlayersResource {
         if (authId == null || !authId.equals(player.getId())) {
             return Response.status(403).entity("Bad authentication id").build();
         }
-
-        DBCollection players = playerDB.getCollection("players");
-        DBObject query = new BasicDBObject("id", player.getId());
-        DBCursor cursor = players.find(query);
-
-        if (cursor.hasNext()) {
+        
+        CouchDbConnector db = PlayerDbConnector.getConnector();
+        if(db.contains(player.getId())){
             return Response.status(409).entity("Error player : " + player.getName() + " already exists").build();
         }
+        
+        if(player.getApiKey()==null){
+            player.generateApiKey();
+        }
 
-        System.out.println("player " + player.toString());
-
-        System.out.println("ps == null? " + (null == ps));
-        DBObject playerToStore = player.toDBObject(ps);
-        players.insert(playerToStore);
+        db.create(player);
 
         return Response.status(201).build();
     }

@@ -122,8 +122,8 @@ public class PlayerFilter implements Filter {
                     claims = jwt.getBody();
                     playerId = jwt.getBody().getSubject();
 
-                    System.out.println("Valid JWT: (" + playerId + ") " + request.getServletContext().getContextPath()
-                            + ((HttpServletRequest) request).getPathInfo() + " " + jwtParam);
+                    //System.out.println("Valid JWT: (" + playerId + ") " + request.getServletContext().getContextPath()
+                    //        + ((HttpServletRequest) request).getPathInfo() + " " + jwtParam);
                     jwtValid = true;
                 } catch (io.jsonwebtoken.SignatureException e) {
                     // thrown if the signature on id_token cannot be verified.
