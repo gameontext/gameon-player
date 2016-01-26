@@ -10,6 +10,7 @@
     <feature>jsonp-1.0</feature>
     <feature>jndi-1.0</feature>
     <feature>concurrent-1.0</feature>
+    <feature>couchdb-1.0</feature>
   </featureManager>
 
   <basicRegistry id="NotUsed" realm="BasicRealm">
@@ -20,6 +21,13 @@
 
   <sslDefault sslRef="DefaultSSLSettings" />
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore" />
+
+  <couchdb id="couchdb" 
+      jndiName="couchdb/connector"
+      libraryRef="CouchDbLib"
+      url="${env.COUCHDB_URL}"
+      username="${env.COUCHDB_USER}" 
+      password="${env.COUCHDB_PASSWORD}"/>
 
   <library id="CouchDbLib">
     <fileset dir='${server.config.dir}/lib' />

@@ -18,6 +18,8 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -34,7 +36,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
 import org.ektorp.UpdateConflictException;
+import org.ektorp.impl.StdCouchDbConnector;
 
 /**
  * The Player service, where players remember where they are, and what they have
@@ -45,7 +49,18 @@ import org.ektorp.UpdateConflictException;
 public class PlayerResource {
     @Context
     HttpServletRequest httpRequest;
-
+    
+    @Resource(name = "couchdb/connector")
+    protected CouchDbInstance dbi;
+       
+    protected CouchDbConnector db;
+    
+    @PostConstruct
+    protected void postConstruct() {
+        db = new StdCouchDbConnector("playerdb", dbi); 
+        db.createDatabaseIfNotExists();         
+    }
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
@@ -58,7 +73,6 @@ public class PlayerResource {
             throw new RequestNotAllowedForThisIDException("Bad authentication id");
         }
 
-        CouchDbConnector db = PlayerDbConnector.getConnector();
         if(db.contains(id)){
             Player p = db.get(Player.class, id);        
             return p;
@@ -76,7 +90,6 @@ public class PlayerResource {
             throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
         }
         
-        CouchDbConnector db = PlayerDbConnector.getConnector();
         db.update(newPlayer);
 
         return Response.status(204).build();
@@ -93,7 +106,6 @@ public class PlayerResource {
             return Response.status(403).entity("Bad authentication id").build();
         }
         
-        CouchDbConnector db = PlayerDbConnector.getConnector();
         Player p = db.get(Player.class, id);
         if(p!=null){
             db.delete(p);
@@ -114,7 +126,6 @@ public class PlayerResource {
             throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
         }
         
-        CouchDbConnector db = PlayerDbConnector.getConnector();
         Player p = db.get(Player.class, id);
 
         String oldLocation = update.getString("old");

@@ -18,6 +18,8 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,7 +31,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
 import org.ektorp.ViewQuery;
+import org.ektorp.impl.StdCouchDbConnector;
 
 /**
  * All the players, and searching for players.
@@ -39,11 +43,21 @@ import org.ektorp.ViewQuery;
 public class AllPlayersResource {
     @Context
     HttpServletRequest httpRequest;
+    
+    @Resource(name = "couchdb/connector")
+    protected CouchDbInstance dbi;
+       
+    protected CouchDbConnector db;
+    
+    @PostConstruct
+    protected void postConstruct() {
+        db = new StdCouchDbConnector("playerdb", dbi); 
+        db.createDatabaseIfNotExists();         
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Player> getAllPlayers() throws IOException {
-        CouchDbConnector db = PlayerDbConnector.getConnector();
 
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
         List<Player> results = db.queryView(q, Player.class);
@@ -63,7 +77,6 @@ public class AllPlayersResource {
             return Response.status(403).entity("Bad authentication id").build();
         }
         
-        CouchDbConnector db = PlayerDbConnector.getConnector();
         if(db.contains(player.getId())){
             return Response.status(409).entity("Error player : " + player.getName() + " already exists").build();
         }

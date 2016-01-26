@@ -26,6 +26,9 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   keytool -delete -storepass testOnlyKeystore -alias endeca -keystore security/key.jks
   keytool -v -importkeystore -srcalias 1 -alias 1 -destalias default -noprompt -srcstorepass keystore -deststorepass testOnlyKeystore -srckeypass keystore -destkeypass testOnlyKeystore -srckeystore cert.pkcs12 -srcstoretype PKCS12 -destkeystore security/key.jks -deststoretype JKS
 
+  export COUCHDB_URL=$(etcdctl get /couchdb/url)
+  export COUCHDB_USER=$(etcdctl get /couchdb/user)
+  export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
   export CONCIERGE_URL=$(etcdctl get /concierge/url)
   export CONCIERGE_KEY=$(etcdctl get /passwords/concierge-key)
   export PLAYER_URL=$(etcdctl get /player/url)
