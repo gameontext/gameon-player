@@ -40,6 +40,8 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export FACEBOOK_APP_SECRET=$(etcdctl get /player/facebook/secret)
   export GOOGLE_APP_ID=$(etcdctl get /player/google/id)
   export GOOGLE_APP_SECRET=$(etcdctl get /player/google/secret)
+  export GITHUB_APP_ID=$(etcdctl get /player/github/id)
+  export GITHUB_APP_SECRET=$(etcdctl get /player/github/secret)
   export SUCCESS_CALLBACK=$(etcdctl get /player/callback)
   
   /opt/ibm/wlp/bin/server start defaultServer

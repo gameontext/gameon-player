@@ -58,6 +58,10 @@
   <!-- Google Application Info...  -->
   <jndiEntry jndiName="googleOAuthConsumerKey" value="${env.GOOGLE_APP_ID}"/>
   <jndiEntry jndiName="googleOAuthConsumerSecret" value="${env.GOOGLE_APP_SECRET}"/>
+  
+  <!-- Github Application Info...  -->
+  <jndiEntry jndiName="gitHubOAuthKey" value="${env.GITHUB_APP_ID}"/>
+  <jndiEntry jndiName="gitHubOAuthSecret" value="${env.GITHUB_APP_SECRET}"/>
 
   <applicationMonitor dropinsEnabled="false"/>
 
