@@ -34,6 +34,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -74,6 +75,8 @@ public class GitHubCallback extends JwtAuth {
         //ok, we have our code.. so the user has agreed to our app being authed.
         String code = request.getParameter("code");
         
+        String state = (String) request.getSession().getAttribute("github");
+        
         //now we need to invoke the access_token endpoint to swap the code for a token.
         StringBuffer callbackURL = request.getRequestURL();
         int index = callbackURL.lastIndexOf("/");
@@ -93,8 +96,7 @@ public class GitHubCallback extends JwtAuth {
             //add the code we just got given.. 
             url.put("code", code);           
             url.put("redirect_uri", callbackURL );
-            //and our totally random state token. It's random, because I picked it.
-            url.put("state", "fish");
+            url.put("state", state);
             
             //now place the request to github..
             HttpRequest infoRequest = requestFactory.buildGetRequest(url);

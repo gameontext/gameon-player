@@ -40,6 +40,8 @@ import org.ektorp.CouchDbInstance;
 import org.ektorp.UpdateConflictException;
 import org.ektorp.impl.StdCouchDbConnector;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -63,8 +65,8 @@ public class PlayerResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
-
+    public Response getPlayerInformation(@PathParam("id") String id) throws IOException {
+        
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
 
@@ -72,10 +74,14 @@ public class PlayerResource {
         if (authId == null || !authId.equals(id)) {
             throw new RequestNotAllowedForThisIDException("Bad authentication id");
         }
-
+        
         if(db.contains(id)){
-            Player p = db.get(Player.class, id);        
-            return p;
+            Player p = db.get(Player.class, id);   
+            
+            ObjectMapper om = new ObjectMapper();
+            String player = om.writeValueAsString(p);  
+            
+            return Response.ok(player,MediaType.APPLICATION_JSON).build();
         }else{
             throw new PlayerNotFoundException("Id not known");
         }
@@ -87,8 +93,20 @@ public class PlayerResource {
         @SuppressWarnings("unchecked")
         Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
         if (!"server".equals(claims.get("aud"))) {
-            throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
+            //if the audience isn't server.. we only allow update of selected Fields.
+            Player requested = newPlayer;
+            //lookup the matching record & clone the fields into it
+            if(db.contains(requested.getId())){
+                newPlayer = db.get(Player.class, requested.getId());
+                //we ONLY allow these fields to be updated with a non server audience jwt.
+                newPlayer.setName(requested.getName());
+                newPlayer.setFavoriteColor(requested.getFavoriteColor());
+            }else{
+                throw new PlayerNotFoundException("Id not known");
+            }
         }
+        
+
         
         db.update(newPlayer);
 

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.NON_EMPTY)
 public class Player extends CouchDbDocument{
@@ -87,7 +86,7 @@ public class Player extends CouchDbDocument{
         return "Player [id=" + getId() + ", revision=" + getRevision() +", name=" + name + ", authBy=" + authBy + ", location=" + location
                 + ", favoriteColor=" + favoriteColor + "]";
     }
-    
+
     //package visibility so can be invoked from places loading object
     @JsonIgnore
     void generateApiKey(){
