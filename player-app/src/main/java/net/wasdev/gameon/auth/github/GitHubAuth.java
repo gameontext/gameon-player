@@ -16,6 +16,7 @@
 package net.wasdev.gameon.auth.github;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletException;
@@ -40,13 +41,17 @@ public class GitHubAuth extends HttpServlet {
             throws ServletException, IOException {
 
         try {
+            UUID stateUUID = UUID.randomUUID();
+            String state=stateUUID.toString();
+            request.getSession().setAttribute("github", state);
+            
             // google will tell the users browser to go to this address once
             // they are done authing.
             StringBuffer callbackURL = request.getRequestURL();
             int index = callbackURL.lastIndexOf("/");
             callbackURL.replace(index, callbackURL.length(), "").append("/GitHubCallback");
             
-            String newUrl = url + "?client_id="+key+"&redirect_url="+callbackURL.toString()+"&state=fish";
+            String newUrl = url + "?client_id="+key+"&redirect_url="+callbackURL.toString()+"&state="+state;
             
             // send the user to google to be authenticated.
             response.sendRedirect(newUrl);

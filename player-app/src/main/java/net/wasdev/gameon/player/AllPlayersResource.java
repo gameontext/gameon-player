@@ -35,6 +35,8 @@ import org.ektorp.CouchDbInstance;
 import org.ektorp.ViewQuery;
 import org.ektorp.impl.StdCouchDbConnector;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * All the players, and searching for players.
  *
@@ -57,12 +59,15 @@ public class AllPlayersResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Player> getAllPlayers() throws IOException {
+    public Response getAllPlayers() throws IOException {
 
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
         List<Player> results = db.queryView(q, Player.class);
+               
+        ObjectMapper om = new ObjectMapper();
+        String player = om.writeValueAsString(results);  
         
-        return results;
+        return Response.ok(player,MediaType.APPLICATION_JSON).build();
     }
 
     @POST
