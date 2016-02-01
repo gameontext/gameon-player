@@ -92,11 +92,17 @@ public class PlayerResource {
             //if the audience isn't server.. we only allow update of selected Fields.
             Player requested = newPlayer;
             //lookup the matching record & clone the fields into it
-            if(db.contains(requested.getId())){
+            if(db.contains(requested.getId())){                
                 newPlayer = db.get(Player.class, requested.getId());
                 //we ONLY allow these fields to be updated with a non server audience jwt.
                 newPlayer.setName(requested.getName());
                 newPlayer.setFavoriteColor(requested.getFavoriteColor());
+                
+                //if the inbound profile has no apiKey set at all.. we regenerate the apikey for
+                //this player..
+                if(requested.getApiKey()==null){
+                    newPlayer.generateApiKey();
+                }               
             }else{
                 throw new PlayerNotFoundException("Id not known");
             }
