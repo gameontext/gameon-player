@@ -65,7 +65,7 @@ public class PlayerResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPlayerInformation(@PathParam("id") String id) throws IOException {
+    public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
         
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
@@ -76,12 +76,8 @@ public class PlayerResource {
         }
         
         if(db.contains(id)){
-            Player p = db.get(Player.class, id);   
-            
-            ObjectMapper om = new ObjectMapper();
-            String player = om.writeValueAsString(p);  
-            
-            return Response.ok(player,MediaType.APPLICATION_JSON).build();
+            Player p = db.get(Player.class, id);             
+            return p ; 
         }else{
             throw new PlayerNotFoundException("Id not known");
         }
@@ -105,9 +101,7 @@ public class PlayerResource {
                 throw new PlayerNotFoundException("Id not known");
             }
         }
-        
-
-        
+              
         db.update(newPlayer);
 
         return Response.status(204).build();

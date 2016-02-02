@@ -59,15 +59,12 @@ public class AllPlayersResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllPlayers() throws IOException {
+    public List<Player> getAllPlayers() throws IOException {
 
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
-        List<Player> results = db.queryView(q, Player.class);
-               
-        ObjectMapper om = new ObjectMapper();
-        String player = om.writeValueAsString(results);  
+        List<Player> results = db.queryView(q, Player.class);  
         
-        return Response.ok(player,MediaType.APPLICATION_JSON).build();
+        return results;
     }
 
     @POST

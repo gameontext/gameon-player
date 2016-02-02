@@ -29,8 +29,18 @@ public class PlayerApplication extends Application {
             Arrays.asList(new Class<?>[] { AllPlayersResource.class, PlayerResource.class, Player.class,
                     PlayerNotFoundException.class, RequestNotAllowedForThisIDException.class }));
 
+    public final static Set<Object> singletons = new HashSet<Object>( 
+            Arrays.asList(new Object[] {new JsonProvider(), new JaxbJsonProvider() } ));
+    
     @Override
     public Set<Class<?>> getClasses() {
         return playerJaxRSClasses;
     }
+
+    @Override
+    public Set<Object> getSingletons() {
+        return singletons;
+    }
+    
+    
 }
