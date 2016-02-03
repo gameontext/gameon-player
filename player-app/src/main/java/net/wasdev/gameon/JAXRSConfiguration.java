@@ -18,7 +18,7 @@ package net.wasdev.gameon;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-@ApplicationPath("/players/*")
+@ApplicationPath("/*")
 public class JAXRSConfiguration extends Application {
 
 }
