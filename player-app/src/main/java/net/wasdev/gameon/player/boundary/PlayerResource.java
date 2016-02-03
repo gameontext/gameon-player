@@ -51,6 +51,8 @@ public class PlayerResource {
     HttpServletRequest httpRequest;
 
     @Resource(name = "couchdb/connector")
+    // changed by Adam Bien -> injection is more flexible and should be preferred.
+    //@Inject
     protected CouchDbInstance dbi;
 
     protected CouchDbConnector db;
