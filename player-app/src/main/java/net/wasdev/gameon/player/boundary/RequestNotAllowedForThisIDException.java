@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package net.wasdev.gameon;
+package net.wasdev.gameon.player.boundary;
 
-import java.io.IOException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+public class RequestNotAllowedForThisIDException extends RuntimeException
+        implements ExceptionMapper<RequestNotAllowedForThisIDException> {
+    private static final long serialVersionUID = 1L;
 
-public class CORSFilter implements Filter {
-
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        HttpServletResponse sresponse = (HttpServletResponse) response;
-        sresponse.setHeader("Access-Control-Allow-Origin", "*");
-        chain.doFilter(request, response);
+    public RequestNotAllowedForThisIDException() {
     }
 
-    public void init(FilterConfig filterConfig) {
+    public RequestNotAllowedForThisIDException(String message) {
+        super(message);
     }
 
-    public void destroy() {
+    @Override
+    public Response toResponse(RequestNotAllowedForThisIDException exception) {
+        return Response.status(403).entity(exception.getMessage()).type("text/plain").build();
     }
 }
