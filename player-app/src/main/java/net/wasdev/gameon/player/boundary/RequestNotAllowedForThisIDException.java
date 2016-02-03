@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package net.wasdev.gameon.player;
+package net.wasdev.gameon.player.boundary;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-public class PlayerNotFoundException extends RuntimeException implements ExceptionMapper<PlayerNotFoundException> {
-
+public class RequestNotAllowedForThisIDException extends RuntimeException
+        implements ExceptionMapper<RequestNotAllowedForThisIDException> {
     private static final long serialVersionUID = 1L;
 
-    public PlayerNotFoundException() {
+    public RequestNotAllowedForThisIDException() {
     }
 
-    public PlayerNotFoundException(String message) {
+    public RequestNotAllowedForThisIDException(String message) {
         super(message);
     }
 
     @Override
-    public Response toResponse(PlayerNotFoundException exception) {
-        return Response.status(404).entity("Player not found").type("text/plain").build();
+    public Response toResponse(RequestNotAllowedForThisIDException exception) {
+        return Response.status(403).entity(exception.getMessage()).type("text/plain").build();
     }
 }

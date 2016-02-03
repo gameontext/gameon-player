@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright (c) 2015 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *******************************************************************************/
-package net.wasdev.gameon.player;
+ ****************************************************************************** */
+package net.wasdev.gameon.player.boundary;
 
 import java.io.IOException;
 import java.util.List;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -29,32 +28,31 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
+import net.wasdev.gameon.player.entity.Player;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.ViewQuery;
 import org.ektorp.impl.StdCouchDbConnector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * All the players, and searching for players.
  *
  */
-@Path("/")
-public class AllPlayersResource {
+@Path("players")
+public class PlayersResource {
+
     @Context
     HttpServletRequest httpRequest;
-    
+
     @Resource(name = "couchdb/connector")
     protected CouchDbInstance dbi;
-       
+
     protected CouchDbConnector db;
-    
+
     @PostConstruct
     protected void postConstruct() {
-        db = new StdCouchDbConnector("playerdb", dbi); 
-        db.createDatabaseIfNotExists();         
+        db = new StdCouchDbConnector("playerdb", dbi);
+        db.createDatabaseIfNotExists();
     }
 
     @GET
@@ -62,8 +60,8 @@ public class AllPlayersResource {
     public List<Player> getAllPlayers() throws IOException {
 
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
-        List<Player> results = db.queryView(q, Player.class);  
-        
+        List<Player> results = db.queryView(q, Player.class);
+
         return results;
     }
 
@@ -78,12 +76,12 @@ public class AllPlayersResource {
         if (authId == null || !authId.equals(player.getId())) {
             return Response.status(403).entity("Bad authentication id").build();
         }
-        
-        if(db.contains(player.getId())){
+
+        if (db.contains(player.getId())) {
             return Response.status(409).entity("Error player : " + player.getName() + " already exists").build();
         }
-        
-        if(player.getApiKey()==null){
+
+        if (player.getApiKey() == null) {
             player.generateApiKey();
         }
 

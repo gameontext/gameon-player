@@ -1,4 +1,4 @@
-/*******************************************************************************
+/** *****************************************************************************
  * Copyright (c) 2015 IBM Corp.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *******************************************************************************/
-package net.wasdev.gameon.player;
+ ****************************************************************************** */
+package net.wasdev.gameon.player.boundary;
 
 import java.io.IOException;
 import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.json.Json;
@@ -34,13 +33,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
+import net.wasdev.gameon.player.entity.Player;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.UpdateConflictException;
 import org.ektorp.impl.StdCouchDbConnector;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The Player service, where players remember where they are, and what they have
@@ -49,24 +46,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Path("/{id}")
 public class PlayerResource {
+
     @Context
     HttpServletRequest httpRequest;
-    
+
     @Resource(name = "couchdb/connector")
     protected CouchDbInstance dbi;
-       
+
     protected CouchDbConnector db;
-    
+
     @PostConstruct
     protected void postConstruct() {
-        db = new StdCouchDbConnector("playerdb", dbi); 
-        db.createDatabaseIfNotExists();         
+        db = new StdCouchDbConnector("playerdb", dbi);
+        db.createDatabaseIfNotExists();
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
-        
+
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
 
@@ -74,11 +72,11 @@ public class PlayerResource {
         if (authId == null || !authId.equals(id)) {
             throw new RequestNotAllowedForThisIDException("Bad authentication id");
         }
-        
-        if(db.contains(id)){
-            Player p = db.get(Player.class, id);             
-            return p ; 
-        }else{
+
+        if (db.contains(id)) {
+            Player p = db.get(Player.class, id);
+            return p;
+        } else {
             throw new PlayerNotFoundException("Id not known");
         }
     }
@@ -92,23 +90,23 @@ public class PlayerResource {
             //if the audience isn't server.. we only allow update of selected Fields.
             Player requested = newPlayer;
             //lookup the matching record & clone the fields into it
-            if(db.contains(requested.getId())){
+            if (db.contains(requested.getId())) {
                 newPlayer = db.get(Player.class, requested.getId());
                 //we ONLY allow these fields to be updated with a non server audience jwt.
                 newPlayer.setName(requested.getName());
                 newPlayer.setFavoriteColor(requested.getFavoriteColor());
-            }else{
+            } else {
                 throw new PlayerNotFoundException("Id not known");
             }
         }
-              
+
         db.update(newPlayer);
 
         return Response.status(204).build();
     }
 
     @DELETE
-    public Response removePlayer(@PathParam("id") String id) throws IOException{
+    public Response removePlayer(@PathParam("id") String id) throws IOException {
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
 
@@ -117,12 +115,12 @@ public class PlayerResource {
         if (authId == null || !authId.equals(id)) {
             return Response.status(403).entity("Bad authentication id").build();
         }
-        
+
         Player p = db.get(Player.class, id);
-        if(p!=null){
+        if (p != null) {
             db.delete(p);
         }
-        
+
         return Response.status(200).build();
     }
 
@@ -137,7 +135,7 @@ public class PlayerResource {
         if (!"server".equals(claims.get("aud"))) {
             throw new RequestNotAllowedForThisIDException("Invalid token type " + claims.get("aud"));
         }
-        
+
         Player p = db.get(Player.class, id);
 
         String oldLocation = update.getString("old");
