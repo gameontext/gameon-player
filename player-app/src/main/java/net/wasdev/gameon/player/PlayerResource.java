@@ -69,17 +69,26 @@ public class PlayerResource {
         
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
-
-        // only allow get for matching id.
-        if (authId == null || !authId.equals(id)) {
-            throw new RequestNotAllowedForThisIDException("Bad authentication id");
-        }
         
-        if(db.contains(id)){
-            Player p = db.get(Player.class, id);             
-            return p ; 
+        if(authId == null){        
+            if(db.contains(id)){
+                Player p = db.get(Player.class, id);  
+                p.setApiKey("NOT ALLOWED VIA UNAUTHENTICATED GET");
+                return p ; 
+            }else{
+                throw new PlayerNotFoundException("Id not known");
+            }            
         }else{
-            throw new PlayerNotFoundException("Id not known");
+            // only allow get for matching id.
+            if ( !authId.equals(id)) {
+                throw new RequestNotAllowedForThisIDException("Bad authentication id");
+            }        
+            if(db.contains(id)){
+                Player p = db.get(Player.class, id);             
+                return p ; 
+            }else{
+                throw new PlayerNotFoundException("Id not known");
+            }
         }
     }
 
@@ -92,11 +101,17 @@ public class PlayerResource {
             //if the audience isn't server.. we only allow update of selected Fields.
             Player requested = newPlayer;
             //lookup the matching record & clone the fields into it
-            if(db.contains(requested.getId())){
+            if(db.contains(requested.getId())){                
                 newPlayer = db.get(Player.class, requested.getId());
                 //we ONLY allow these fields to be updated with a non server audience jwt.
                 newPlayer.setName(requested.getName());
                 newPlayer.setFavoriteColor(requested.getFavoriteColor());
+                
+                //if the inbound profile has no apiKey set at all.. we regenerate the apikey for
+                //this player..
+                if(requested.getApiKey()==null){
+                    newPlayer.generateApiKey();
+                }               
             }else{
                 throw new PlayerNotFoundException("Id not known");
             }

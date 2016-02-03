@@ -35,8 +35,6 @@ import org.ektorp.CouchDbInstance;
 import org.ektorp.ViewQuery;
 import org.ektorp.impl.StdCouchDbConnector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * All the players, and searching for players.
  *
@@ -60,9 +58,17 @@ public class AllPlayersResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Player> getAllPlayers() throws IOException {
-
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
+        
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
         List<Player> results = db.queryView(q, Player.class);  
+        
+        if(authId == null){
+            for(Player p : results){
+                p.setApiKey("NOT ALLOWED VIA UNAUTHENTICATED GET");
+            }
+        }
         
         return results;
     }

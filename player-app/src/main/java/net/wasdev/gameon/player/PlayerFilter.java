@@ -100,30 +100,23 @@ public class PlayerFilter implements Filter {
         AuthenticationState state = AuthenticationState.hasQueryString; // default
         while (!state.equals(AuthenticationState.PASSED)) {
             switch (state) {
-            case hasQueryString: // check that there is a query string
-                                    // containing the jwt
-                queryString = ((HttpServletRequest) request).getQueryString(); // this
-                                                                                // is
-                                                                                // the
-                                                                                // raw
-                                                                                // version
+            case hasQueryString: 
+                // check that there is a query string containing the jwt
+                queryString = ((HttpServletRequest) request).getQueryString(); 
                 state = (queryString == null) ? AuthenticationState.ACCESS_DENIED : AuthenticationState.hasJWTParam;
                 break;
             case hasJWTParam: // check there is an jwt parameter
-                pos = queryString.lastIndexOf(jwtParamName + "=");
-                state = (pos == -1) ? AuthenticationState.ACCESS_DENIED : AuthenticationState.isJWTValid;
+                pos = queryString.lastIndexOf(jwtParamName + "=");                
+                boolean hasJwt = (pos != -1);               
+                state = !hasJwt ? AuthenticationState.ACCESS_DENIED : AuthenticationState.isJWTValid;
                 break;
             case isJWTValid: // validate the jwt
                 String jwtParam = request.getParameter(jwtParamName);
                 boolean jwtValid = false;
                 try {
                     Jws<Claims> jwt = Jwts.parser().setSigningKey(signingCert.getPublicKey()).parseClaimsJws(jwtParam);
-
                     claims = jwt.getBody();
                     playerId = jwt.getBody().getSubject();
-
-                    //System.out.println("Valid JWT: (" + playerId + ") " + request.getServletContext().getContextPath()
-                    //        + ((HttpServletRequest) request).getPathInfo() + " " + jwtParam);
                     jwtValid = true;
                 } catch (io.jsonwebtoken.SignatureException e) {
                     // thrown if the signature on id_token cannot be verified.
@@ -134,7 +127,16 @@ public class PlayerFilter implements Filter {
                 }
                 state = !jwtValid ? AuthenticationState.ACCESS_DENIED : AuthenticationState.PASSED;
                 break;
-            case ACCESS_DENIED:
+            case ACCESS_DENIED: {
+                //we allow unauthenticated access to the GET url only
+                HttpServletRequest r = (HttpServletRequest) request;
+                if("GET".equals(r.getMethod()) && (queryString==null || queryString.isEmpty())){
+                    state = AuthenticationState.PASSED;
+                    playerId = null;
+                    break;
+                }
+                //else fall through to default, and reject request.
+            }
             default:
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
