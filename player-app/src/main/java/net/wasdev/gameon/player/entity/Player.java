@@ -25,6 +25,8 @@ import java.util.Base64.Encoder;
 import java.util.UUID;
 import org.ektorp.support.CouchDbDocument;
 
+// changed by Adam Bien -> com.fasterxml should not be necessary. JSONP / JAXB should be preferred.
+// other servers (GF, WildFly) are offering JSON-binding via JAXB without any additional configuration.
 @JsonInclude(Include.NON_EMPTY)
 public class Player extends CouchDbDocument {
 
