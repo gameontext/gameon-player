@@ -69,17 +69,26 @@ public class PlayerResource {
         
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
-
-        // only allow get for matching id.
-        if (authId == null || !authId.equals(id)) {
-            throw new RequestNotAllowedForThisIDException("Bad authentication id");
-        }
         
-        if(db.contains(id)){
-            Player p = db.get(Player.class, id);             
-            return p ; 
+        if(authId == null){        
+            if(db.contains(id)){
+                Player p = db.get(Player.class, id);  
+                p.setApiKey("NOT ALLOWED VIA UNAUTHENTICATED GET");
+                return p ; 
+            }else{
+                throw new PlayerNotFoundException("Id not known");
+            }            
         }else{
-            throw new PlayerNotFoundException("Id not known");
+            // only allow get for matching id.
+            if ( !authId.equals(id)) {
+                throw new RequestNotAllowedForThisIDException("Bad authentication id");
+            }        
+            if(db.contains(id)){
+                Player p = db.get(Player.class, id);             
+                return p ; 
+            }else{
+                throw new PlayerNotFoundException("Id not known");
+            }
         }
     }
 
