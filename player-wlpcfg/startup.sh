@@ -63,5 +63,5 @@ else
 
   echo Have setup couchdb with user ${COUCHDB_USER}
 
-  /opt/ibm/wlp/bin/server run defaultServer
+  exec /opt/ibm/wlp/bin/server run defaultServer
 fi
