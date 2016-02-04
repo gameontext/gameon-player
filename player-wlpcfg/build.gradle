@@ -91,7 +91,7 @@ task removeCurrentContainer(type: DockerRemoveContainer) {
 task createNewContainer(type: DockerCreateContainer) {
     targetImageId { "gameon-player" }
     containerName = "gameon-player"
-    portBindings = ['9443:9443']
+    portBindings = ['9082:9080','9443:9443']
     env = localEnvironment
 }
 
@@ -104,7 +104,7 @@ task startNewContainer(type: DockerStartContainer) {
 task createNewEtcdContainer(type: DockerCreateContainer) {
     targetImageId { "gameon-player" }
     containerName = "gameon-player"
-    portBindings = ['9443:9443']
+    portBindings = ['9082:9080','9443:9443']
     env = etcdEnvironment
     links = ['etcd:etcd']
 }

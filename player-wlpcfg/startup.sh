@@ -17,7 +17,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   tar xzf etcd-v2.2.2-linux-amd64.tar.gz etcd-v2.2.2-linux-amd64/etcdctl --strip-components=1
   rm etcd-v2.2.2-linux-amd64.tar.gz
   mv etcdctl /usr/local/bin/etcdctl
-  
+
   cd /opt/ibm/wlp/usr/servers/defaultServer/resources/
   etcdctl get /proxy/third-party-ssl-cert > cert.pem
   openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in cert.pem
@@ -32,8 +32,6 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export CONCIERGE_URL=$(etcdctl get /concierge/url)
   export CONCIERGE_KEY=$(etcdctl get /passwords/concierge-key)
   export PLAYER_URL=$(etcdctl get /player/url)
-  export MONGO_HOST=$(etcdctl get /mongo/host)
-  export MONGO_PORT=$(etcdctl get /mongo/port)
   export TWITTER_CONSUMER_KEY=$(etcdctl get /player/twitter/id)
   export TWITTER_CONSUMER_SECRET=$(etcdctl get /player/twitter/secret)
   export FACEBOOK_APP_ID=$(etcdctl get /player/facebook/id)
@@ -43,7 +41,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export GITHUB_APP_ID=$(etcdctl get /player/github/id)
   export GITHUB_APP_SECRET=$(etcdctl get /player/github/secret)
   export SUCCESS_CALLBACK=$(etcdctl get /player/callback)
-  
+
   /opt/ibm/wlp/bin/server start defaultServer
   echo Starting the logstash forwarder...
   sed -i s/PLACEHOLDER_LOGHOST/$(etcdctl get /logstash/endpoint)/g /opt/forwarder.conf
@@ -62,7 +60,7 @@ else
   if [ $? -eq 22 ]; then
       curl -X PUT ${COUCHDB_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
   fi
-  
+
   echo Have setup couchdb with user ${COUCHDB_USER}
 
   /opt/ibm/wlp/bin/server run defaultServer
