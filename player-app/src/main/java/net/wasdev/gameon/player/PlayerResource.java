@@ -40,8 +40,6 @@ import org.ektorp.CouchDbInstance;
 import org.ektorp.UpdateConflictException;
 import org.ektorp.impl.StdCouchDbConnector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -49,6 +47,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @Path("/{id}")
 public class PlayerResource {
+    private static final String ACCESS_DENIED = "ACCESS_DENIED";
+
     @Context
     HttpServletRequest httpRequest;
     
@@ -69,31 +69,29 @@ public class PlayerResource {
         
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
-        
-        if(authId == null){        
-            if(db.contains(id)){
-                Player p = db.get(Player.class, id);  
-                p.setApiKey("NOT ALLOWED VIA UNAUTHENTICATED GET");
-                return p ; 
-            }else{
-                throw new PlayerNotFoundException("Id not known");
-            }            
-        }else{
-            // only allow get for matching id.
-            if ( !authId.equals(id)) {
-                throw new RequestNotAllowedForThisIDException("Bad authentication id");
-            }        
-            if(db.contains(id)){
-                Player p = db.get(Player.class, id);             
-                return p ; 
-            }else{
-                throw new PlayerNotFoundException("Id not known");
+          
+        if(db.contains(id)){
+            Player p = db.get(Player.class, id);      
+            if ( authId==null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID) )) {
+                p.setApiKey(ACCESS_DENIED);
             }
+            return p ; 
+        }else{
+            throw new PlayerNotFoundException("Id not known");
         }
+        
     }
 
     @PUT
-    public Response updatePlayer(@PathParam("id") String id, Player newPlayer) throws IOException {
+    public Response updatePlayer(@PathParam("id") String id, Player newPlayer) throws IOException {        
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
+        
+        //reject updates unless they come from matching player, or game-on id.
+        if (authId == null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID))) {
+            return Response.status(403).entity("Bad authentication id").build();
+        }
+        
         // we don't want to allow this method to be invoked by a user.
         @SuppressWarnings("unchecked")
         Map<String, Object> claims = (Map<String, Object>) httpRequest.getAttribute("player.claims");
@@ -108,8 +106,8 @@ public class PlayerResource {
                 newPlayer.setFavoriteColor(requested.getFavoriteColor());
                 
                 //if the inbound profile has no apiKey set at all.. we regenerate the apikey for
-                //this player..
-                if(requested.getApiKey()==null){
+                //this player.. (unless player apikey is currently access_denied.)
+                if(requested.getApiKey()==null && !newPlayer.getApiKey().equals(ACCESS_DENIED)){
                     newPlayer.generateApiKey();
                 }               
             }else{
@@ -128,8 +126,8 @@ public class PlayerResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         // players are allowed to delete themselves..
-        // only allow delete for matching id.
-        if (authId == null || !authId.equals(id)) {
+        // only allow delete for matching id, or gameon id.
+        if (authId == null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID))) {
             return Response.status(403).entity("Bad authentication id").build();
         }
         
