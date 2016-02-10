@@ -64,9 +64,11 @@ public class AllPlayersResource {
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
         List<Player> results = db.queryView(q, Player.class);  
         
-        if(authId == null){
-            for(Player p : results){
-                p.setApiKey("NOT ALLOWED VIA UNAUTHENTICATED GET");
+        //filter out the apikey info if unauthed, or for non matching ids
+        //(unless id is GAMEON_ID in which case allow it)
+        for(Player p : results){
+            if(authId == null || !(authId.equals(p.getId()) || authId.equals(PlayerFilter.GAMEON_ID))){
+                p.setApiKey("ACCESS_DENIED");
             }
         }
         
@@ -81,7 +83,7 @@ public class AllPlayersResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         // only allow create for matching id.
-        if (authId == null || !authId.equals(player.getId())) {
+        if (authId == null || !(authId.equals(player.getId())||authId.equals(PlayerFilter.GAMEON_ID))) {
             return Response.status(403).entity("Bad authentication id").build();
         }
         
