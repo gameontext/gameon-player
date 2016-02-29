@@ -95,7 +95,6 @@ public class PlayerFilter implements Filter {
         String playerId = null;
         Map<String, Object> claims = null;
         
-        System.out.println("==========> AUTHENTICATION");
         HttpServletRequest req = ((HttpServletRequest) request);
         JWT jwt = new JWT(signingCert, req.getHeader(jwtHeaderName));
         if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
