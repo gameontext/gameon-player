@@ -106,13 +106,16 @@ public class PlayerFilter implements Filter {
                 return;
             }
         }
-        for(String param : req.getParameterValues(jwtParamName)) {
-            if(jwtParam == null) {
-                jwtParam = param;
-            } else {
-                //multiple header values are an error, so get a bad request
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
+        String[] params = req.getParameterValues(jwtParamName);
+        if(params != null) {
+            for(String param : params) {
+                if(jwtParam == null) {
+                    jwtParam = param;
+                } else {
+                    //multiple header values are an error, so get a bad request
+                    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
             }
         }
         
