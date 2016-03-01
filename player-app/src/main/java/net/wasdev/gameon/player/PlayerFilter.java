@@ -22,6 +22,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Enumeration;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -35,10 +36,6 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
 import net.wasdev.gameon.auth.JWT;
 import net.wasdev.gameon.auth.JWT.AuthenticationState;
 
@@ -96,7 +93,30 @@ public class PlayerFilter implements Filter {
         Map<String, Object> claims = null;
         
         HttpServletRequest req = ((HttpServletRequest) request);
-        JWT jwt = new JWT(signingCert, req.getHeader(jwtHeaderName));
+        String jwtHeader = null;
+        String jwtParam = null;
+        
+        //reject the request if multiple jwt headers or parameters were supplied
+        for(Enumeration<String> headers = req.getHeaders(jwtHeaderName); headers.hasMoreElements(); ) {
+            if(jwtHeader == null) {
+                jwtHeader = headers.nextElement();
+            } else {
+                //multiple header values are an error, so get a bad request
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+        }
+        for(String param : req.getParameterValues(jwtParamName)) {
+            if(jwtParam == null) {
+                jwtParam = param;
+            } else {
+                //multiple header values are an error, so get a bad request
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+        }
+        
+        JWT jwt = new JWT(signingCert, jwtHeader, jwtParam);
         if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
             //JWT is not valid, however we let GET requests with no parameters through
             if(!("GET".equals(req.getMethod()) && (req.getQueryString()==null || req.getQueryString().isEmpty()))){
