@@ -22,6 +22,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Enumeration;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -35,10 +36,8 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
+import net.wasdev.gameon.auth.JWT;
+import net.wasdev.gameon.auth.JWT.AuthenticationState;
 
 @WebFilter(filterName = "playerAuthFilter", urlPatterns = { "/players/*" })
 public class PlayerFilter implements Filter {
@@ -84,70 +83,56 @@ public class PlayerFilter implements Filter {
     }
 
     private final static String jwtParamName = "jwt";
+    private final static String jwtHeaderName = "gameon-jwt";
 
-    // the authentication steps that are performed on an incoming request
-    private enum AuthenticationState {
-        hasQueryString, // starting state
-        hasJWTParam, isJWTValid, PASSED, // end state
-        ACCESS_DENIED // end state
-    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        String queryString = null;
         String playerId = null;
         Map<String, Object> claims = null;
-        int pos = 0;
-        AuthenticationState state = AuthenticationState.hasQueryString; // default
-        while (!state.equals(AuthenticationState.PASSED)) {
-            switch (state) {
-            case hasQueryString: 
-                // check that there is a query string containing the jwt
-                queryString = ((HttpServletRequest) request).getQueryString(); 
-                state = (queryString == null) ? AuthenticationState.ACCESS_DENIED : AuthenticationState.hasJWTParam;
-                break;
-            case hasJWTParam: // check there is an jwt parameter
-                pos = queryString.lastIndexOf(jwtParamName + "=");                
-                boolean hasJwt = (pos != -1);               
-                state = !hasJwt ? AuthenticationState.ACCESS_DENIED : AuthenticationState.isJWTValid;
-                break;
-            case isJWTValid: // validate the jwt
-                String jwtParam = request.getParameter(jwtParamName);
-                boolean jwtValid = false;
-                try {
-                    Jws<Claims> jwt = Jwts.parser().setSigningKey(signingCert.getPublicKey()).parseClaimsJws(jwtParam);
-                    claims = jwt.getBody();
-                    playerId = jwt.getBody().getSubject();
-                    jwtValid = true;
-                } catch (io.jsonwebtoken.SignatureException e) {
-                    // thrown if the signature on id_token cannot be verified.
-                    System.out.println("JWT did NOT validate ok, bad signature.");
-                } catch (ExpiredJwtException e) {
-                    // thrown if the jwt had expired.
-                    System.out.println("JWT did NOT validate ok, jwt had expired");
-                }
-                state = !jwtValid ? AuthenticationState.ACCESS_DENIED : AuthenticationState.PASSED;
-                break;
-            case ACCESS_DENIED: {
-                //we allow unauthenticated access to the GET url only
-                HttpServletRequest r = (HttpServletRequest) request;
-                if("GET".equals(r.getMethod()) && (queryString==null || queryString.isEmpty())){
-                    state = AuthenticationState.PASSED;
-                    playerId = null;
-                    break;
-                }
-                //else fall through to default, and reject request.
-            }
-            default:
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+        
+        HttpServletRequest req = ((HttpServletRequest) request);
+        String jwtHeader = null;
+        String jwtParam = null;
+        
+        //reject the request if multiple jwt headers or parameters were supplied
+        for(Enumeration<String> headers = req.getHeaders(jwtHeaderName); headers.hasMoreElements(); ) {
+            if(jwtHeader == null) {
+                jwtHeader = headers.nextElement();
+            } else {
+                //multiple header values are an error, so get a bad request
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
         }
-        // request has passed all validation checks, so allow it to proceed
+        String[] params = req.getParameterValues(jwtParamName);
+        if(params != null) {
+            for(String param : params) {
+                if(jwtParam == null) {
+                    jwtParam = param;
+                } else {
+                    //multiple header values are an error, so get a bad request
+                    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+            }
+        }
+        
+        JWT jwt = new JWT(signingCert, jwtHeader, jwtParam);
+        if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
+            //JWT is not valid, however we let GET requests with no parameters through
+            if(!("GET".equals(req.getMethod()) && (req.getQueryString()==null || req.getQueryString().isEmpty()))){
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+        } else {
+            claims = jwt.getClaims();
+            playerId = jwt.getClaims().getSubject();
+        }
         request.setAttribute("player.id", playerId);
         request.setAttribute("player.claims", claims);
-        chain.doFilter(request, response);
+        chain.doFilter(request, response);        
     }
 
     @Override
