@@ -5,6 +5,8 @@ sourceCompatibility = 1.8
 
 configurations {
     couchdb
+    jmockit
+    testCompile.extendsFrom jmockit
 }
 
 dependencies {
@@ -32,6 +34,13 @@ dependencies {
     runtime 'org.slf4j:slf4j-jdk14:1.7.13'
 
     providedCompile configurations.couchdb
+    
+    jmockit 'org.jmockit:jmockit:1.22'
+    testCompile 'junit:junit:4.12'
+}
+
+test {
+   jvmArgs "-javaagent:${configurations.jmockit.singleFile.absolutePath}"
 }
 
 task exportLibs(type: Copy) {

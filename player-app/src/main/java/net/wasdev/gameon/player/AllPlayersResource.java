@@ -18,8 +18,7 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -31,9 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
-import org.ektorp.CouchDbInstance;
 import org.ektorp.ViewQuery;
-import org.ektorp.impl.StdCouchDbConnector;
 
 /**
  * All the players, and searching for players.
@@ -44,16 +41,8 @@ public class AllPlayersResource {
     @Context
     HttpServletRequest httpRequest;
     
-    @Resource(name = "couchdb/connector")
-    protected CouchDbInstance dbi;
-       
+    @Inject
     protected CouchDbConnector db;
-    
-    @PostConstruct
-    protected void postConstruct() {
-        db = new StdCouchDbConnector("playerdb", dbi); 
-        db.createDatabaseIfNotExists();         
-    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
