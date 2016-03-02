@@ -17,6 +17,13 @@ cd ..
 
 echo Building projects using gradle...
 ./gradlew build 
+rc=$?
+if [ $rc != 0 ]
+then
+  echo "Gradle build failed, will NOT perform Docker steps."
+  exit 1
+fi
+
 echo Building and Starting Concierge Docker Image...
 cd player-wlpcfg
 

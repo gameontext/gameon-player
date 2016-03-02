@@ -27,8 +27,12 @@ if (null != System.getenv('DOCKER_CERT_PATH')){
 }
 
 def localEnvironment = ["LICENSE=accept",
-            "CONCIERGE_URL=" + System.getenv('CONCIERGE_URL'),
-            "CONCIERGE_KEY=" + System.getenv('CONCIERGE_KEY'),
+            "MAP_URL=" + System.getenv('MAP_URL'),
+            "MAP_KEY=" + System.getenv('MAP_KEY'),
+            "MAP_PLAYER_URL=" + System.getenv('MAP_PLAYER_URL'),
+            "COUCHDB_URL=" + System.getenv('COUCHDB_URL'),
+            "COUCHDB_USER=" + System.getenv('COUCHDB_USER'),
+            "COUCHDB_PASSWORD=" + System.getenv('COUCHDB_PASSWORD'),
             "MONGO_HOST=" + System.getenv('MONGO_HOST'),
             "MONGO_PORT=" + System.getenv('MONGO_PORT'),
             "TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),

@@ -18,8 +18,7 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -36,9 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
-import org.ektorp.CouchDbInstance;
 import org.ektorp.UpdateConflictException;
-import org.ektorp.impl.StdCouchDbConnector;
 
 /**
  * The Player service, where players remember where they are, and what they have
@@ -51,17 +48,9 @@ public class PlayerResource {
 
     @Context
     HttpServletRequest httpRequest;
-    
-    @Resource(name = "couchdb/connector")
-    protected CouchDbInstance dbi;
-       
+
+    @Inject
     protected CouchDbConnector db;
-    
-    @PostConstruct
-    protected void postConstruct() {
-        db = new StdCouchDbConnector("playerdb", dbi); 
-        db.createDatabaseIfNotExists();         
-    }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -134,6 +123,8 @@ public class PlayerResource {
         Player p = db.get(Player.class, id);
         if(p!=null){
             db.delete(p);
+        }else{
+            throw new PlayerNotFoundException("Id not known");
         }
         
         return Response.status(200).build();
