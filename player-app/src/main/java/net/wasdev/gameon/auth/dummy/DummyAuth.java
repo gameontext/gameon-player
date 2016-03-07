@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +30,7 @@ import net.wasdev.gameon.auth.JwtAuth;
 
 /**
  * A backend-less auth impl for testing.
- * 
+ *
  * Accepts the username as a parameter, and returns a signed jwt for that
  * username.
  */
@@ -54,6 +52,7 @@ public class DummyAuth extends JwtAuth {
         }
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String s = request.getParameter("dummyUserName");

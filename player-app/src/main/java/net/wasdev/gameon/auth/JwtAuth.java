@@ -24,7 +24,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -57,7 +56,7 @@ public abstract class JwtAuth extends HttpServlet {
 
     /**
      * Obtain the key we'll use to sign the jwts we issue.
-     * 
+     *
      * @throws IOException
      *             if there are any issues with the keystore processing.
      */
@@ -86,7 +85,7 @@ public abstract class JwtAuth extends HttpServlet {
     /**
      * Obtain a JWT with the claims supplied. The key "id" will be used to set
      * the JWT subject.
-     * 
+     *
      * @param claims
      *            map of string->string for claim data to embed in the jwt.
      * @return jwt encoded as string, ready to send to http.

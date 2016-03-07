@@ -35,7 +35,6 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
 
 import net.wasdev.gameon.auth.JwtAuth;
 
@@ -69,7 +68,7 @@ public class GoogleCallback extends JwtAuth {
     /**
      * Method that performs introspection on an AUTH string, and returns data as
      * a String->String hashmap.
-     * 
+     *
      * @param auth
      *            the authstring to query, as built by an auth impl.
      * @return the data from the introspect, in a map.

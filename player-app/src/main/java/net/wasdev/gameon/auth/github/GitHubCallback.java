@@ -34,7 +34,6 @@ import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -67,16 +66,16 @@ public class GitHubCallback extends JwtAuth {
             System.err.println("Error finding webapp base URL; please set this in your environment variables!");
         }
     }
- 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         //ok, we have our code.. so the user has agreed to our app being authed.
         String code = request.getParameter("code");
-        
+
         String state = (String) request.getSession().getAttribute("github");
-        
+
         //now we need to invoke the access_token endpoint to swap the code for a token.
         StringBuffer callbackURL = request.getRequestURL();
         int index = callbackURL.lastIndexOf("/");
@@ -84,30 +83,30 @@ public class GitHubCallback extends JwtAuth {
 
         HttpRequestFactory requestFactory;
         try {
-            //we'll ignore the ssl cert of the github server for now.. 
-            //eventually we may add this to the player truststore.. 
+            //we'll ignore the ssl cert of the github server for now..
+            //eventually we may add this to the player truststore..
             requestFactory = new NetHttpTransport.Builder().doNotValidateCertificate().build().createRequestFactory();
-            
-            //prepare the request.. 
+
+            //prepare the request..
             GenericUrl url = new GenericUrl("https://github.com/login/oauth/access_token");
             //set the client id & secret from the injected environment.
             url.put("client_id", key);
             url.put("client_secret", secret);
-            //add the code we just got given.. 
-            url.put("code", code);           
+            //add the code we just got given..
+            url.put("code", code);
             url.put("redirect_uri", callbackURL );
             url.put("state", state);
-            
+
             //now place the request to github..
             HttpRequest infoRequest = requestFactory.buildGetRequest(url);
-            HttpResponse r = infoRequest.execute();            
+            HttpResponse r = infoRequest.execute();
             String resp = "failed.";
             if(r.isSuccessStatusCode()){
-                
+
                 //response comes back as query param encoded data.. we'll grab the token from that...
                 resp = r.parseAsString();
-                
-                //http client way to parse query params.. 
+
+                //http client way to parse query params..
                 List<NameValuePair> params = URLEncodedUtils.parse(resp, Charset.forName("UTF-8"));
                 String token = null;
                 for(NameValuePair param : params){
@@ -117,33 +116,33 @@ public class GitHubCallback extends JwtAuth {
                 }
 
                 if(token!=null){
-                    //great, we have a token, now we can use that to request the user profile..                    
+                    //great, we have a token, now we can use that to request the user profile..
                     GenericUrl query = new GenericUrl("https://api.github.com/user");
                     query.put("access_token", token);
-                    
+
                     HttpRequest userRequest = requestFactory.buildGetRequest(query);
                     HttpResponse u = userRequest.execute();
-                    if(u.isSuccessStatusCode()){                        
-                        //user profile comes back as json..                         
+                    if(u.isSuccessStatusCode()){
+                        //user profile comes back as json..
                         resp = u.parseAsString();
                         System.out.println(resp);
-                        
+
                         //use om to parse the json, so we can grab the id & name from it.
                         ObjectMapper om = new ObjectMapper();
                         JsonNode jn = om.readValue(resp,JsonNode.class);
-                        
+
                         Map<String, String> claims = new HashMap<String,String>();
                         claims.put("valid", "true");
-                        //github id is a number, but we'll read it as text incase it changes in future.. 
+                        //github id is a number, but we'll read it as text incase it changes in future..
                         claims.put("id", "github:" + jn.get("id").asText());
                         claims.put("name", jn.get("login").textValue());
-                        
+
                         String jwt = createJwt(claims);
-                        
+
                         //log for now, we'll clean this up once it's all working =)
                         System.out.println("New User Authed: " + claims.get("id")+" jwt "+jwt);
                         response.sendRedirect(callbackSuccess + "/" + jwt);
-                        
+
                     }else{
                         System.out.println(u.getStatusCode());
                         response.sendRedirect("http://game-on.org/#/game");
@@ -153,9 +152,9 @@ public class GitHubCallback extends JwtAuth {
                     response.sendRedirect("http://game-on.org/#/game");
                 }
             }else{
-                response.sendRedirect("http://game-on.org/#/game"); 
+                response.sendRedirect("http://game-on.org/#/game");
             }
-           
+
         } catch (GeneralSecurityException e) {
             throw new ServletException(e);
         }

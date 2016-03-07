@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +64,7 @@ public class TwitterCallback extends JwtAuth {
     /**
      * Method that performs introspection on an AUTH string, and returns data as
      * a String->String hashmap.
-     * 
+     *
      * @param auth
      *            the authstring to query, as built by an auth impl.
      * @return the data from the introspect, in a map.
@@ -78,7 +76,7 @@ public class TwitterCallback extends JwtAuth {
 
         ConfigurationBuilder c = new ConfigurationBuilder();
         c.setOAuthConsumerKey(key).setOAuthConsumerSecret(secret).setOAuthAccessToken(token)
-                .setOAuthAccessTokenSecret(tokensecret);
+        .setOAuthAccessTokenSecret(tokensecret);
 
         Twitter twitter = new TwitterFactory(c.build()).getInstance();
 

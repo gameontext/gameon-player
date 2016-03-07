@@ -16,16 +16,9 @@
 package net.wasdev.gameon.auth.google;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collections;
 
 import javax.annotation.Resource;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -50,6 +43,7 @@ public class GoogleAuth extends HttpServlet {
     public GoogleAuth() {
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -57,9 +51,9 @@ public class GoogleAuth extends HttpServlet {
         HttpTransport httpTransport = new NetHttpTransport();
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow(
-                httpTransport, 
-                jsonFactory, 
-                key, 
+                httpTransport,
+                jsonFactory,
+                key,
                 secret,
                 Arrays.asList("https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"));
 

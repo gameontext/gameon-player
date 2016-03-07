@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +62,7 @@ public class FacebookCallback extends JwtAuth {
     /**
      * Utility method to obtain an accesstoken given a facebook code and the
      * redirecturl used to obtain it.
-     * 
+     *
      * @param code
      * @param redirectUrl
      * @return the acccess token
@@ -90,7 +88,7 @@ public class FacebookCallback extends JwtAuth {
     /**
      * Method that performs introspection on an AUTH string, and returns data as
      * a String->String hashmap.
-     * 
+     *
      * @param auth
      *            the authstring to query, as built by an auth impl.
      * @return the data from the introspect, in a map.
