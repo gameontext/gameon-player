@@ -121,30 +121,35 @@ public class TwitterCallback extends JwtAuth {
 
         // grab the verifier token from the request parms.
         String verifier = request.getParameter("oauth_verifier");
-        try {
-            // clean up the session as we go (can leave twitter there if we need
-            // it again).
-            request.getSession().removeAttribute("requestToken");
-
-            // swap the verifier token for an access token
-            AccessToken token = twitter.getOAuthAccessToken(requestToken, verifier);
-
-            Map<String, String> claims = introspectAuth(token.getToken(), token.getTokenSecret());
-
-            // if auth key was no longer valid, we won't build a jwt. redirect
-            // back to start.
-            if (!"true".equals(claims.get("valid"))) {
-                response.sendRedirect("http://game-on.org/#/game");
-            } else {
-                String newJwt = createJwt(claims);
-
-                // debug.
-                System.out.println("New User Authed: " + claims.get("id"));
-                response.sendRedirect(callbackSuccess + "/" + newJwt);
+        if(verifier == null){
+            //user elected to decline auth? 
+            response.sendRedirect("http://game-on.org/#/game");
+        }else{
+            try {
+                // clean up the session as we go (can leave twitter there if we need
+                // it again).
+                request.getSession().removeAttribute("requestToken");
+    
+                // swap the verifier token for an access token
+                AccessToken token = twitter.getOAuthAccessToken(requestToken, verifier);
+    
+                Map<String, String> claims = introspectAuth(token.getToken(), token.getTokenSecret());
+    
+                // if auth key was no longer valid, we won't build a jwt. redirect
+                // back to start.
+                if (!"true".equals(claims.get("valid"))) {
+                    response.sendRedirect("http://game-on.org/#/game");
+                } else {
+                    String newJwt = createJwt(claims);
+    
+                    // debug.
+                    System.out.println("New User Authed: " + claims.get("id"));
+                    response.sendRedirect(callbackSuccess + "/" + newJwt);
+                }
+    
+            } catch (TwitterException e) {
+                throw new ServletException(e);
             }
-
-        } catch (TwitterException e) {
-            throw new ServletException(e);
         }
     }
 }
