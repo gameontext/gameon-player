@@ -1,15 +1,20 @@
 package net.wasdev.gameon.player;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.ektorp.CouchDbConnector;
+import org.ektorp.UpdateConflictException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -252,6 +257,327 @@ public class PlayerResourceTest {
         }
     }
 
+    @Test
+    public void checkClientUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","client");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns(playerId);
+            request.getAttribute("player.claims"); returns(claims);
+            dbi.contains(playerId); returns(true);
+            dbi.get(Player.class, playerId); returns(dbEntry);
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            proposed.setName("AnotherName");
+            proposed.setFavoriteColor("AnotherColor");
+            proposed.setId(playerId);
+            
+            Response result = tested.updatePlayer(playerId, proposed);  
+            
+            assertEquals("Player Name was not updated ", proposed.getName(), dbEntry.getName());
+            assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), dbEntry.getFavoriteColor());
+            assertEquals("Player Id should not have changed ", proposed.getId(), dbEntry.getId());
+            assertNotEquals("Player ApiKey should have been updated ", dbEntry.getApiKey(), "ShinyShoes");   
+            
+            new Verifications() {{
+                dbi.update(dbEntry); times = 1;
+                //check we got 204
+                Response.status(204); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkServerIdUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","client");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns("game-on.org");
+            request.getAttribute("player.claims"); returns(claims);
+            dbi.contains(playerId); returns(true);
+            dbi.get(Player.class, playerId); returns(dbEntry);
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            proposed.setName("AnotherName");
+            proposed.setFavoriteColor("AnotherColor");
+            proposed.setId(playerId);
+            
+            Response result = tested.updatePlayer(playerId, proposed);  
+            
+            assertEquals("Player Name was not updated ", proposed.getName(), dbEntry.getName());
+            assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), dbEntry.getFavoriteColor());
+            assertEquals("Player Id should not have changed ", proposed.getId(), dbEntry.getId());
+            assertNotEquals("Player ApiKey should have been updated ", dbEntry.getApiKey(), "ShinyShoes");   
+            
+            new Verifications() {{
+                dbi.update(dbEntry); times = 1;
+                //check we got 204
+                Response.status(204); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkClientUpdateMissingDbEntry(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+                
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","client");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns("game-on.org");
+            request.getAttribute("player.claims"); returns(claims);
+            dbi.contains(playerId); returns(false);
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            proposed.setName("AnotherName");
+            proposed.setFavoriteColor("AnotherColor");
+            proposed.setId(playerId);
+            
+            try{
+                Response result = tested.updatePlayer(playerId, proposed);
+                fail("updatePlayer with no db entry did not throw playernotfound");
+            }catch(PlayerNotFoundException e){
+                //expected.
+            }
+            
+            new Verifications() {{
+                dbi.update(any); times = 0;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkClientUpdateNoMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","client");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns(playerId+"FISH");
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            
+            Response result = tested.updatePlayer(playerId, proposed);  
+            
+            new Verifications() {{
+                dbi.update(dbEntry); times = 0;
+                //check we got 204
+                Response.status(403); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkClientUpdateMatchingIdKeepApiKey(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","client");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns(playerId);
+            request.getAttribute("player.claims"); returns(claims);
+            dbi.contains(playerId); returns(true);
+            dbi.get(Player.class, playerId); returns(dbEntry);
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            proposed.setName("AnotherName");
+            proposed.setFavoriteColor("AnotherColor");
+            proposed.setApiKey("FISH"); //doesn't matter what the value is, as long as its not null.
+            proposed.setId(playerId);
+            
+            Response result = tested.updatePlayer(playerId, proposed);  
+            
+            assertEquals("Player Name was not updated ", proposed.getName(), dbEntry.getName());
+            assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), dbEntry.getFavoriteColor());
+            assertEquals("Player Id should not have changed ", proposed.getId(), dbEntry.getId());
+            assertEquals("Player ApiKey should not have been updated ", dbEntry.getApiKey(), "ShinyShoes");   
+            
+            new Verifications() {{
+                dbi.update(dbEntry); times = 1;
+                //check we got 204
+                Response.status(204); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkServerUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+            
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","server");
+        new Expectations() {{
+            request.getAttribute("player.id"); returns(playerId);
+            request.getAttribute("player.claims"); returns(claims);
+        }}; 
+        
+        try{
+            Player proposed = new Player();
+            proposed.setName("AnotherName");
+            proposed.setFavoriteColor("AnotherColor");
+            proposed.setApiKey("FISH"); //with aud server, fish will become the new key.
+            proposed.setId(playerId);
+            
+            Response result = tested.updatePlayer(playerId, proposed);  
+                     
+            new Verifications() {{
+                dbi.update(proposed); times = 1;
+                //check we got 204
+                Response.status(204); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkServerLocationUpdateMatchingId(@Mocked JsonObject update, @Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        dbEntry.setLocation("Earth");
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","server");
+        new Expectations() {{
+            request.getAttribute("player.claims"); returns(claims);
+            update.getString("old"); returns("Earth");
+            update.getString("new"); returns("Mars");
+            dbi.get(Player.class, playerId); returns(dbEntry);
+        }}; 
+        
+        try{
+            Response result = tested.updatePlayerLocation(playerId, update);  
+                     
+            new Verifications() {{
+                dbi.update(any); times = 1;
+                //check we got 200
+                Response.status(200); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
+    @Test
+    public void checkServerLocationUpdateMatchingIdNoMatchingLocation(@Mocked JsonObject update, @Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        dbEntry.setLocation("Earth");
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","server");
+        new Expectations() {{
+            request.getAttribute("player.claims"); returns(claims);
+            update.getString("old"); returns("Mars");
+            update.getString("new"); returns("Venus");
+            dbi.get(Player.class, playerId); returns(dbEntry);
+        }}; 
+        
+        try{
+            Response result = tested.updatePlayerLocation(playerId, update);  
+                     
+            new Verifications() {{
+                dbi.update(any); times = 0;
+                //check we got 409
+                Response.status(409); times = 1;
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+       
+    @Test
+    public void checkServerLocationUpdateMatchingIdConflict(@Mocked JsonObject update, @Mocked Response response, @Mocked ResponseBuilder builder){
+        String playerId = "fish";
+        
+        Player dbEntry = new Player();
+        dbEntry.setApiKey("ShinyShoes");
+        dbEntry.setName("Kitten");
+        dbEntry.setFavoriteColor("Tangerine");
+        dbEntry.setId(playerId);
+        dbEntry.setLocation("Earth");
+        
+        Map<String,Object> claims = new HashMap<String,Object>();
+        claims.put("aud","server");
+        new Expectations() {{
+            request.getAttribute("player.claims"); returns(claims);
+            update.getString("old"); returns("Earth");
+            update.getString("new"); returns("Mars");
+            dbi.get(Player.class, playerId); returns(dbEntry);
+            dbi.update(any); result = new UpdateConflictException();
+        }}; 
+        
+        try{
+            Response result = tested.updatePlayerLocation(playerId, update);  
+                     
+            new Verifications() {{
+                dbi.update(any); times = 1;
+                //check we got 500
+                Response.status(500); times = 1;                     
+             }};
+        }catch(IOException io){
+            fail("Bad exception");
+        }
+    }
+    
     
     
 }

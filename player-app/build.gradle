@@ -37,6 +37,7 @@ dependencies {
     
     jmockit 'org.jmockit:jmockit:1.22'
     testCompile 'junit:junit:4.12'
+    testCompile 'org.glassfish:javax.json:1.0.4'
 }
 
 test {
