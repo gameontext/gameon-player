@@ -140,7 +140,7 @@ public class TwitterCallback extends JwtAuth {
                 // if auth key was no longer valid, we won't build a jwt. redirect
                 // back to start.
                 if (!"true".equals(claims.get("valid"))) {
-    
+                    response.sendRedirect("http://game-on.org/#/game");
                 } else {
                     String newJwt = createJwt(claims);
     
