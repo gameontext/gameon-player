@@ -50,8 +50,6 @@ public class PlayerFilter implements Filter {
 
     @Resource(lookup = "jwtKeyStoreAlias")
     String keyStoreAlias;
-    
-    public final static String GAMEON_ID = "game-on.org";
 
     private static Certificate signingCert = null;
 

@@ -45,8 +45,10 @@ public class FacebookCallback extends JwtAuth {
     String appId;
     @Resource(lookup = "facebookSecret")
     String secretKey;
-    @Resource(lookup = "authCallbcakURLSuccess")
+    @Resource(lookup = "authCallbackURLSuccess")
     String callbackSuccess;
+    @Resource(lookup = "authCallbackURLFailure")
+    String callbackFailure;
 
     public FacebookCallback() {
         super();
@@ -144,7 +146,7 @@ public class FacebookCallback extends JwtAuth {
         // if auth key was no longer valid, we won't build a jwt. redirect back
         // to start.
         if (!"true".equals(claims.get("valid"))) {
-            response.sendRedirect("http://game-on.org/#/game");
+            response.sendRedirect(callbackFailure);
         } else {
             String newJwt = createJwt(claims);
 

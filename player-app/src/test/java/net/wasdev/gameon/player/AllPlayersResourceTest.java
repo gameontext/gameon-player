@@ -27,6 +27,7 @@ public class AllPlayersResourceTest {
     @Tested AllPlayersResource tested;
     @Injectable CouchDbConnector dbi;
     @Injectable HttpServletRequest request;
+    @Injectable String systemId;
     
     @Test
     /** this is one we might chose to disable except for system id */
@@ -142,7 +143,7 @@ public class AllPlayersResourceTest {
         dbEntry.setLocation("Earth");
         
         new Expectations() {{
-            request.getAttribute("player.id"); returns("game-on.org");
+            request.getAttribute("player.id"); returns(systemId);
             dbi.contains(playerId); returns(false);
         }}; 
         
@@ -210,7 +211,7 @@ public class AllPlayersResourceTest {
         players.add(two);
         
         new Expectations() {{
-            request.getAttribute("player.id"); returns("game-on.org");
+            request.getAttribute("player.id"); returns(systemId);
             dbi.queryView((ViewQuery)any,Player.class); returns(players);
         }};
                 

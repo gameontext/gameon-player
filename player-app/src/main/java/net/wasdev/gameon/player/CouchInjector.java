@@ -8,7 +8,7 @@ import org.ektorp.CouchDbInstance;
 import org.ektorp.impl.StdCouchDbConnector;
 
 public class CouchInjector {
-    @Resource(name = "couchdb/connector")
+    @Resource(lookup="couchdb/connector")
     protected CouchDbInstance dbi;
     
         @Produces

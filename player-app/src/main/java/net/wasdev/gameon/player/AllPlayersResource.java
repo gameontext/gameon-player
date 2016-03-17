@@ -18,6 +18,7 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -43,6 +44,9 @@ public class AllPlayersResource {
     
     @Inject
     protected CouchDbConnector db;
+    
+    @Resource(lookup = "systemId")
+    String systemId;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -54,9 +58,9 @@ public class AllPlayersResource {
         List<Player> results = db.queryView(q, Player.class);  
         
         //filter out the apikey info if unauthed, or for non matching ids
-        //(unless id is GAMEON_ID in which case allow it)
+        //(unless id is system in which case allow it)
         for(Player p : results){
-            if(authId == null || !(authId.equals(p.getId()) || authId.equals(PlayerFilter.GAMEON_ID))){
+            if(authId == null || !(authId.equals(p.getId()) || authId.equals(systemId))){
                 p.setApiKey("ACCESS_DENIED");
             }
         }
@@ -72,7 +76,7 @@ public class AllPlayersResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         // only allow create for matching id.
-        if (authId == null || !(authId.equals(player.getId())||authId.equals(PlayerFilter.GAMEON_ID))) {
+        if (authId == null || !(authId.equals(player.getId())||authId.equals(systemId))) {
             return Response.status(403).entity("Bad authentication id").build();
         }
         

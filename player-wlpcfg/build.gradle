@@ -33,8 +33,6 @@ def localEnvironment = ["LICENSE=accept",
             "COUCHDB_URL=" + System.getenv('COUCHDB_URL'),
             "COUCHDB_USER=" + System.getenv('COUCHDB_USER'),
             "COUCHDB_PASSWORD=" + System.getenv('COUCHDB_PASSWORD'),
-            "MONGO_HOST=" + System.getenv('MONGO_HOST'),
-            "MONGO_PORT=" + System.getenv('MONGO_PORT'),
             "TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
             "TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
             "FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
@@ -42,7 +40,9 @@ def localEnvironment = ["LICENSE=accept",
             "GOOGLE_APP_ID=" + System.getenv('GOOGLE_APP_ID'),
             "GOOGLE_APP_SECRET=" + System.getenv('GOOGLE_APP_SECRET'),
             "SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
-            "PLAYER_URL=" + System.getenv('PLAYER_URL')
+            "FAIL_CALLBACK=" + System.getenv('FAIL_CALLBACK'),
+            "PLAYER_URL=" + System.getenv('PLAYER_URL'),
+            "SYSTEM_ID=" + System.getenv('SYSTEM_ID')
         ]
 
 if (null != System.getenv("SSL_CERT"))

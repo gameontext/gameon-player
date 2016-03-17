@@ -38,7 +38,7 @@ import net.wasdev.gameon.auth.JwtAuth;
 public class DummyAuth extends JwtAuth {
     private static final long serialVersionUID = 1L;
 
-    @Resource(lookup = "authCallbcakURLSuccess")
+    @Resource(lookup = "authCallbackURLSuccess")
     String callbackSuccess;
 
     public DummyAuth() {

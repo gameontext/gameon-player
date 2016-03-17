@@ -30,6 +30,7 @@ public class PlayerResourceTest {
     @Tested PlayerResource tested;
     @Injectable CouchDbConnector dbi;
     @Injectable HttpServletRequest request;
+    @Injectable String systemId;
     
     @Test
     public void checkGetMatchingId(@Mocked Player player) {   
@@ -57,7 +58,7 @@ public class PlayerResourceTest {
     public void checkGetMissingId(@Mocked Player player) {   
         String playerId = "fish";
         new Expectations() {{
-            request.getAttribute("player.id"); returns(null);
+            request.getAttribute("player.id"); returns(null);            
             dbi.contains(playerId); returns(true);
             dbi.get(Player.class, playerId); returns(player);
             player.setApiKey("ACCESS_DENIED");
@@ -125,6 +126,7 @@ public class PlayerResourceTest {
     public void checkGetSystemId(@Mocked Player player) {   
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
             dbi.contains(playerId); returns(true);
             dbi.get(Player.class, playerId); returns(player);
@@ -149,6 +151,7 @@ public class PlayerResourceTest {
             
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             dbi.get(Player.class, playerId); returns(player);
         }};
@@ -172,6 +175,7 @@ public class PlayerResourceTest {
             
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(null);
         }};
                 
@@ -195,6 +199,7 @@ public class PlayerResourceTest {
             
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
             dbi.get(Player.class, playerId); returns(player);
         }};
@@ -218,6 +223,7 @@ public class PlayerResourceTest {
             
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("Biscuit");
         }};
                 
@@ -241,6 +247,7 @@ public class PlayerResourceTest {
             
         String playerId = "fish";
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             dbi.get(Player.class, playerId); returns(null);
         }};
@@ -270,6 +277,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","client");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
             dbi.contains(playerId); returns(true);
@@ -312,6 +320,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","client");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
             request.getAttribute("player.claims"); returns(claims);
             dbi.contains(playerId); returns(true);
@@ -348,6 +357,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","client");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
             request.getAttribute("player.claims"); returns(claims);
             dbi.contains(playerId); returns(false);
@@ -387,6 +397,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","client");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId+"FISH");
         }}; 
         
@@ -418,6 +429,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","client");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
             dbi.contains(playerId); returns(true);
@@ -455,6 +467,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","server");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
         }}; 
@@ -492,6 +505,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","server");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
             update.getString("old"); returns("Earth");
             update.getString("new"); returns("Mars");
@@ -525,6 +539,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","server");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
             update.getString("old"); returns("Mars");
             update.getString("new"); returns("Venus");
@@ -558,6 +573,7 @@ public class PlayerResourceTest {
         Map<String,Object> claims = new HashMap<String,Object>();
         claims.put("aud","server");
         new Expectations() {{
+            tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
             update.getString("old"); returns("Earth");
             update.getString("new"); returns("Mars");

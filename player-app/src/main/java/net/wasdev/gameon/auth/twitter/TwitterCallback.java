@@ -47,8 +47,10 @@ public class TwitterCallback extends JwtAuth {
     String key;
     @Resource(lookup = "twitterOAuthConsumerSecret")
     String secret;
-    @Resource(lookup = "authCallbcakURLSuccess")
+    @Resource(lookup = "authCallbackURLSuccess")
     String callbackSuccess;
+    @Resource(lookup = "authCallbackURLFailure")
+    String callbackFailure;
 
     public TwitterCallback() {
         super();
@@ -122,8 +124,8 @@ public class TwitterCallback extends JwtAuth {
         // grab the verifier token from the request parms.
         String verifier = request.getParameter("oauth_verifier");
         if(verifier == null){
-            //user elected to decline auth? 
-            response.sendRedirect("http://game-on.org/#/game");
+            //user elected to decline auth? redirect to fail url.
+            response.sendRedirect(callbackFailure);
         }else{
             try {
                 // clean up the session as we go (can leave twitter there if we need
@@ -136,9 +138,9 @@ public class TwitterCallback extends JwtAuth {
                 Map<String, String> claims = introspectAuth(token.getToken(), token.getTokenSecret());
     
                 // if auth key was no longer valid, we won't build a jwt. redirect
-                // back to start.
+                // to failure url.
                 if (!"true".equals(claims.get("valid"))) {
-                    response.sendRedirect("http://game-on.org/#/game");
+                    response.sendRedirect(callbackFailure);
                 } else {
                     String newJwt = createJwt(claims);
     
