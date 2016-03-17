@@ -48,6 +48,8 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export GITHUB_APP_ID=$(etcdctl get /player/github/id)
   export GITHUB_APP_SECRET=$(etcdctl get /player/github/secret)
   export SUCCESS_CALLBACK=$(etcdctl get /player/callback)
+  export FAIL_CALLBACK=$(etcdctl get /player/failcallback)
+  export SYSTEM_ID=$(etcdctl get /player/system_id)
   export LOGSTASH_ENDPOINT=$(etcdctl get /logstash/endpoint)
 
   # Softlayer needs a logstash endpoint so we set up the server

@@ -18,6 +18,7 @@ package net.wasdev.gameon.player;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -52,6 +53,9 @@ public class PlayerResource {
     @Inject
     protected CouchDbConnector db;
     
+    @Resource(lookup = "systemId")
+    String systemId;
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Player getPlayerInformation(@PathParam("id") String id) throws IOException {
@@ -61,7 +65,7 @@ public class PlayerResource {
           
         if(db.contains(id)){
             Player p = db.get(Player.class, id);      
-            if ( authId==null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID) )) {
+            if ( authId==null || !(authId.equals(id) || authId.equals(systemId) )) {
                 p.setApiKey(ACCESS_DENIED);
             }
             return p ; 
@@ -76,8 +80,8 @@ public class PlayerResource {
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
         
-        //reject updates unless they come from matching player, or game-on id.
-        if (authId == null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID))) {
+        //reject updates unless they come from matching player, or system id.
+        if (authId == null || !(authId.equals(id) || authId.equals(systemId))) {
             return Response.status(403).entity("Bad authentication id").build();
         }
         
@@ -115,8 +119,8 @@ public class PlayerResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         // players are allowed to delete themselves..
-        // only allow delete for matching id, or gameon id.
-        if (authId == null || !(authId.equals(id) || authId.equals(PlayerFilter.GAMEON_ID))) {
+        // only allow delete for matching id, or system id.
+        if (authId == null || !(authId.equals(id) || authId.equals(systemId))) {
             return Response.status(403).entity("Bad authentication id").build();
         }
         

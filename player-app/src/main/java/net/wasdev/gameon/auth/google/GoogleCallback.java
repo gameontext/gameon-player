@@ -49,8 +49,10 @@ public class GoogleCallback extends JwtAuth {
     String key;
     @Resource(lookup = "googleOAuthConsumerSecret")
     String secret;
-    @Resource(lookup = "authCallbcakURLSuccess")
+    @Resource(lookup = "authCallbackURLSuccess")
     String callbackSuccess;
+    @Resource(lookup = "authCallbackURLFailure")
+    String callbackFailure;
 
     private GoogleAuthorizationCodeFlow flow = null;
 
@@ -129,7 +131,7 @@ public class GoogleCallback extends JwtAuth {
         // if auth key was no longer valid, we won't build a jwt. redirect back
         // to start.
         if (!"true".equals(claims.get("valid"))) {
-            response.sendRedirect("http://game-on.org/#/game");
+            response.sendRedirect(callbackFailure);
         } else {
             String newJwt = createJwt(claims);
 

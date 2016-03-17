@@ -53,8 +53,10 @@ public class GitHubCallback extends JwtAuth {
     String key;
     @Resource(lookup = "gitHubOAuthSecret")
     String secret;
-    @Resource(lookup = "authCallbcakURLSuccess")
+    @Resource(lookup = "authCallbackURLSuccess")
     String callbackSuccess;
+    @Resource(lookup = "authCallbackURLFailure")
+    String callbackFailure;
 
     public GitHubCallback() {
         super();
@@ -145,14 +147,14 @@ public class GitHubCallback extends JwtAuth {
 
                     }else{
                         System.out.println(u.getStatusCode());
-                        response.sendRedirect("http://game-on.org/#/game");
+                        response.sendRedirect(callbackFailure);
                     }
                 }else{
                     System.out.println("did not find token in github response "+resp);
-                    response.sendRedirect("http://game-on.org/#/game");
+                    response.sendRedirect(callbackFailure);
                 }
             }else{
-                response.sendRedirect("http://game-on.org/#/game");
+                response.sendRedirect(callbackFailure);
             }
 
         } catch (GeneralSecurityException e) {
