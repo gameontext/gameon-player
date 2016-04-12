@@ -36,6 +36,11 @@
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
   <httpEndpoint host="*" httpPort="-1" httpsPort="9443" id="defaultHttpEndpoint"/>
+  
+  <cors domain="/play"
+           allowedOrigins="*"
+           allowedMethods="GET, POST, PUT, DELETE"
+           maxAge="86400" />
 
   <!-- Signed JWT keystore info -->
   <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.jks"/>
