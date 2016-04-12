@@ -1,5 +1,16 @@
 #!/bin/bash
 
+if [ "$SERVERDIRNAME" == "" ]; then
+  SERVERDIRNAME=defaultServer
+else
+  # Share the configuration directory via symlink
+  ln -s /opt/ibm/wlp/usr/servers/defaultServer /opt/ibm/wlp/usr/servers/$SERVERDIRNAME
+
+  # move the convenience output dir link to the new output location
+  rm /output
+  ln -s $WLP_OUTPUT_DIR/$SERVERDIRNAME /output
+fi
+
 if [ "$SSL_CERT" != "" ]; then
   echo Found an SSL cert to use.
   cd /opt/ibm/wlp/usr/servers/defaultServer/resources/
@@ -27,6 +38,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   done
   echo "etcdctl returned sucessfully, continuing"
 
+  mkdir -p /opt/ibm/wlp/usr/servers/defaultServer/resources/security
   cd /opt/ibm/wlp/usr/servers/defaultServer/resources/
   etcdctl get /proxy/third-party-ssl-cert > cert.pem
   openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in cert.pem
@@ -49,17 +61,21 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export GITHUB_APP_SECRET=$(etcdctl get /player/github/secret)
   export SUCCESS_CALLBACK=$(etcdctl get /player/callback)
   export FAIL_CALLBACK=$(etcdctl get /player/failcallback)
-  export SYSTEM_ID=$(etcdctl get /player/system_id)
   export LOGSTASH_ENDPOINT=$(etcdctl get /logstash/endpoint)
+  export LOGMET_HOST=$(etcdctl get /logmet/host)
+  export LOGMET_PORT=$(etcdctl get /logmet/port)
+  export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
+  export LOGMET_PWD=$(etcdctl get /logmet/pwd)
+  export SYSTEM_ID=$(etcdctl get /player/system_id)
 
   # Softlayer needs a logstash endpoint so we set up the server
   # to run in the background and the primary task is running the
   # forwarder. In ICS, Liberty is the primary task so we need to
   # run it in the foreground
   if [ "$LOGSTASH_ENDPOINT" != "" ]; then
-    /opt/ibm/wlp/bin/server start defaultServer
+    /opt/ibm/wlp/bin/server start $SERVERDIRNAME
     echo Starting the logstash forwarder...
-    sed -i s/PLACEHOLDER_LOGHOST/$(etcdctl get /logstash/endpoint)/g /opt/forwarder.conf
+    sed -i s/PLACEHOLDER_LOGHOST/${LOGSTASH_ENDPOINT}/g /opt/forwarder.conf
     cd /opt
     chmod +x ./forwarder
     etcdctl get /logstash/cert > logstash-forwarder.crt
@@ -67,7 +83,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
     sleep 0.5
     ./forwarder --config ./forwarder.conf
   else
-    /opt/ibm/wlp/bin/server run defaultServer
+    /opt/ibm/wlp/bin/server run $SERVERDIRNAME
   fi
 else
   # LOCAL DEVELOPMENT!
@@ -81,5 +97,5 @@ else
 
   echo Have setup couchdb with user ${COUCHDB_USER}
 
-  exec /opt/ibm/wlp/bin/server run defaultServer
+  exec /opt/ibm/wlp/bin/server run $SERVERDIRNAME
 fi
