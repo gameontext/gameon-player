@@ -1,5 +1,8 @@
 <server description="Game On! Player Service">
 
+	<!-- Enable API discovery -->
+    <include location="${server.config.dir}/apiDiscovery.xml"/>
+
     <!-- Enable features -->
   <featureManager>
     <feature>websocket-1.1</feature>
@@ -13,34 +16,29 @@
     <feature>couchdb-1.0</feature>
   </featureManager>
 
-  <basicRegistry id="NotUsed" realm="BasicRealm">
-  </basicRegistry>
-
   <keyStore id="defaultKeyStore" password="testOnlyKeystore"/>
-  <keyStore id="defaultTrustStore" password="truststore" location="truststore.jks"/>
+  <keyStore id="defaultTrustStore" location="truststore.jks" password="truststore"/>
 
-  <sslDefault sslRef="DefaultSSLSettings" />
-  <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore" />
+  <sslDefault sslRef="DefaultSSLSettings"/>
+  <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
 
-  <couchdb id="couchdb" 
-      jndiName="couchdb/connector"
-      libraryRef="CouchDbLib"
-      url="${env.COUCHDB_URL}"
-      username="${env.COUCHDB_USER}" 
-      password="${env.COUCHDB_PASSWORD}"/>
+  <couchdb id="couchdb" jndiName="couchdb/connector" libraryRef="couchdb-lib" password="${env.COUCHDB_PASSWORD}" url="${env.COUCHDB_URL}" username="${env.COUCHDB_USER}"/>
 
-  <library id="CouchDbLib">
-    <fileset dir='${server.config.dir}/lib' />
-  </library>
+    <library id="couchdb-lib" >
+        <fileset dir='${server.config.dir}/lib' />
+    </library>
 
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
-  <httpEndpoint host="*" httpPort="-1" httpsPort="9443" id="defaultHttpEndpoint"/>
-  
-  <cors domain="/play"
-           allowedOrigins="*"
-           allowedMethods="GET, POST, PUT, DELETE"
-           maxAge="86400" />
+    <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
+        <accessLogging
+            filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
+            logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
+        </accessLogging>    
+    </httpEndpoint>
+
+  <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/play" maxAge="86400"/>
+  <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/players" maxAge="86400"/>
 
   <!-- Signed JWT keystore info -->
   <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.jks"/>
@@ -52,7 +50,7 @@
   <jndiEntry jndiName="playerUrl" value="${env.PLAYER_URL}"/>
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
-  <logging traceSpecification="*=info:net.wasdev.gameon.*=all" />
+  <logging traceSpecification="*=info:org.gameon.*=all"/>
 
   <!-- Twitter Application Info... -->
   <jndiEntry jndiName="twitterOAuthConsumerKey" value="${env.TWITTER_CONSUMER_KEY}"/>
@@ -65,15 +63,24 @@
   <!-- Google Application Info...  -->
   <jndiEntry jndiName="googleOAuthConsumerKey" value="${env.GOOGLE_APP_ID}"/>
   <jndiEntry jndiName="googleOAuthConsumerSecret" value="${env.GOOGLE_APP_SECRET}"/>
-  
+
   <!-- Github Application Info...  -->
   <jndiEntry jndiName="gitHubOAuthKey" value="${env.GITHUB_APP_ID}"/>
   <jndiEntry jndiName="gitHubOAuthSecret" value="${env.GITHUB_APP_SECRET}"/>
 
-  <applicationMonitor dropinsEnabled="false"/>
+  <applicationMonitor dropinsEnabled="false" updateTrigger="polled"/>
 
-  <webApplication id="player-app" location="player-app.war" name="player-app" contextRoot="/play">
-    <classloader commonLibraryRef="CouchDbLib"/>
+  <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
+      <classloader commonLibraryRef="couchdb-lib"></classloader>
   </webApplication>
 
+
+  <!-- Preserve the old API as a separate war. Do not inspect it for swagger -->
+  <webApplication contextRoot="/play" id="play-app" location="play-app.war" name="play-app">
+      <classloader commonLibraryRef="couchdb-lib"></classloader>
+  </webApplication>
+  <apiDiscovery>
+     <webModuleDoc contextRoot="/play" enabled="false" />
+  </apiDiscovery>
+ 
 </server>

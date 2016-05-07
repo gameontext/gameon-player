@@ -56,6 +56,10 @@ task copyWAR(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
     into 'servers/gameon-player/apps/'
     rename("player-app-1.0.war", "player-app.war")
+    
+    from '../play-app/build/libs/play-app-1.0.war'
+    into 'servers/gameon-player/apps/'
+    rename("play-app-1.0.war", "play-app.war")
 }
 
 task copyLibs(type: Copy) {

@@ -13,34 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package net.wasdev.gameon.player;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+package org.gameon.player;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-@ApplicationPath("/players/*")
+@ApplicationPath("/v1")
+@io.swagger.annotations.SwaggerDefinition(
+        info = @io.swagger.annotations.Info(
+                title = "Game On! Player API",
+                version = "1.0"
+                ))
 public class PlayerApplication extends Application {
 
-    public final static Set<Class<?>> playerJaxRSClasses = new HashSet<Class<?>>(
-            Arrays.asList(new Class<?>[] { AllPlayersResource.class, PlayerResource.class, Player.class,
-                    PlayerNotFoundException.class, RequestNotAllowedForThisIDException.class }));
 
-    public final static Set<Object> singletons = new HashSet<Object>( 
-            Arrays.asList(new Object[] {new JsonProvider(), new JaxbJsonProvider() } ));
-    
-    @Override
-    public Set<Class<?>> getClasses() {
-        return playerJaxRSClasses;
-    }
-
-    @Override
-    public Set<Object> getSingletons() {
-        return singletons;
-    }
-    
-    
 }
