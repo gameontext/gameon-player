@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package net.wasdev.gameon.player;
+package org.gameon.player.control;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,8 +36,8 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.wasdev.gameon.auth.JWT;
-import net.wasdev.gameon.auth.JWT.AuthenticationState;
+import org.gameon.player.utils.JWT;
+import org.gameon.player.utils.JWT.AuthenticationState;
 
 @WebFilter(filterName = "playerAuthFilter", urlPatterns = { "/players/*" })
 public class PlayerFilter implements Filter {
@@ -89,11 +89,11 @@ public class PlayerFilter implements Filter {
             throws IOException, ServletException {
         String playerId = null;
         Map<String, Object> claims = null;
-        
+
         HttpServletRequest req = ((HttpServletRequest) request);
         String jwtHeader = null;
         String jwtParam = null;
-        
+
         //reject the request if multiple jwt headers or parameters were supplied
         for(Enumeration<String> headers = req.getHeaders(jwtHeaderName); headers.hasMoreElements(); ) {
             if(jwtHeader == null) {
@@ -116,7 +116,7 @@ public class PlayerFilter implements Filter {
                 }
             }
         }
-        
+
         JWT jwt = new JWT(signingCert, jwtHeader, jwtParam);
         if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
             //JWT is not valid, however we let GET requests with no parameters through
@@ -130,7 +130,7 @@ public class PlayerFilter implements Filter {
         }
         request.setAttribute("player.id", playerId);
         request.setAttribute("player.claims", claims);
-        chain.doFilter(request, response);        
+        chain.doFilter(request, response);
     }
 
     @Override
