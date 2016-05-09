@@ -71,8 +71,8 @@ public class AllPlayersResource {
         response = Player.class,
         responseContainer = "List")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Successful"),
-        @ApiResponse(code = 204, message = "No results found")
+        @ApiResponse(code = 200, message = Messages.SUCCESSFUL),
+        @ApiResponse(code = 204, message = Messages.CONFLICT)
     })
     public Response getAllPlayers() throws IOException {
 
@@ -99,9 +99,9 @@ public class AllPlayersResource {
         response = Player.class,
         code = HttpURLConnection.HTTP_CREATED )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_CREATED, message = "Successful"),
+            @ApiResponse(code = HttpServletResponse.SC_CREATED, message = Messages.SUCCESSFUL),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Authenticated user id must match new player id"),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = "Player already exists")
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT)
         })
     public Response createPlayer(Player player) throws IOException {
 
