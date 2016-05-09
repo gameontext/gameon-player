@@ -15,13 +15,8 @@
  *******************************************************************************/
 package org.gameon.player.entity;
 
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,6 +26,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Player account information")
 @JsonInclude(Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Player {
 
     private static final long serialVersionUID = 1L;
