@@ -33,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
+import org.gameon.player.Kafka.PlayerEvent;
 import org.gameon.player.control.PlayerAccountModificationException;
 import org.gameon.player.entity.LocationChange;
 import org.gameon.player.entity.Player;
@@ -61,6 +62,9 @@ public class PlayerAccountResource {
 
     @Inject
     protected CouchDbConnector db;
+    
+    @Inject
+    Kafka kafka;
 
     @Resource(lookup = "systemId")
     String systemId;
@@ -130,6 +134,8 @@ public class PlayerAccountResource {
         
         db.update(fullPlayer);
         
+        kafka.publishPlayerEvent(PlayerEvent.UPDATE, fullPlayer);
+        
         return Response.ok(fullPlayer).build();
     }
 
@@ -161,6 +167,8 @@ public class PlayerAccountResource {
         Player p = db.get(Player.class, id); // throws DocumentNotFoundException
         db.delete(p);
 
+        kafka.publishPlayerEvent(PlayerEvent.DELETE, p);
+        
         return Response.status(HttpServletResponse.SC_NO_CONTENT).build();
     }
 
@@ -209,6 +217,8 @@ public class PlayerAccountResource {
             rc = HttpServletResponse.SC_CONFLICT;
             finalLocation.setLocation(p.getLocation());
         }
+        
+        kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p);
 
         return Response.status(rc).entity(finalLocation).build();
     }
@@ -253,7 +263,9 @@ public class PlayerAccountResource {
 
         if( p.getApiKey() == null && !p.getApiKey().equals(ACCESS_DENIED)){
             p.generateApiKey();
-        }               
+        }           
+        
+        kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, p);
 
         return Response.ok(p).build();
     }
