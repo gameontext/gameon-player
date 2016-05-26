@@ -75,8 +75,8 @@ public class PlayerAccountResource {
         notes = "", 
         response = Player.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = "Player found"),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = "Player not found"),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
     })
     public Player getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -86,7 +86,7 @@ public class PlayerAccountResource {
 
         Player p;
         
-        if (unauthrorizedId(authId, id)) {
+        if (unauthorizedId(authId, id)) {
             p = db.get(Player.class, id); // throws DocumentNotFoundException
         } else {
             p = db.get(PlayerFull.class, id); // throws DocumentNotFoundException
@@ -103,9 +103,10 @@ public class PlayerAccountResource {
             notes = "",
             response = Player.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = "Player updated"),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = "Player not found"),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Caller is forbidden to update specified player")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update specified player")
     })
     public Response updatePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id,
@@ -115,7 +116,7 @@ public class PlayerAccountResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         //reject updates unless they come from matching player, or system id.
-        if (unauthrorizedId(authId, id)) {
+        if (unauthorizedId(authId, id)) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
                     "Player " + id + " could not be updated",
@@ -145,9 +146,10 @@ public class PlayerAccountResource {
             notes = "",
             code = HttpServletResponse.SC_NO_CONTENT )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_NO_CONTENT, message = "Delete successful"),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = "Player not found"),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Caller is forbidden to delete specified player")
+            @ApiResponse(code = HttpServletResponse.SC_NO_CONTENT, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "delete specified player")
     })
     public Response removePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -157,7 +159,7 @@ public class PlayerAccountResource {
 
         // players are allowed to delete themselves..
         // only allow delete for matching id, or system id.
-        if (unauthrorizedId(authId, id)) {
+        if (unauthorizedId(authId, id)) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
                     "Player " + id + " could not be deleted",
@@ -182,10 +184,10 @@ public class PlayerAccountResource {
             code = HttpServletResponse.SC_OK ,
             response = PlayerLocation.class )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = "Update successful"),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = "Player not found"),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = "Save conflict, unable to make requested change"),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Caller is forbidden to update player location")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update player location")
     })
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
 
@@ -233,10 +235,10 @@ public class PlayerAccountResource {
             code = HttpServletResponse.SC_OK ,
             response = Player.class )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = "Update successful"),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = "Player not found"),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = "Save conflict, unable to generate a new api key"),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Caller is forbidden to update player api key")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update player api key")
     })
     public Response updatePlayerApiKey(@PathParam("id") String id) throws IOException {
 
@@ -252,7 +254,7 @@ public class PlayerAccountResource {
                     "Invalid token type " + claims.getAudience());
         }
 
-        if (unauthrorizedId(authId, id)) {
+        if (unauthorizedId(authId, id)) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
                     "Player " + id + " could not be updated",
@@ -270,7 +272,7 @@ public class PlayerAccountResource {
         return Response.ok(p).build();
     }
 
-    private boolean unauthrorizedId(String user, String player) {
+    private boolean unauthorizedId(String user, String player) {
         return ( user == null || !(player.equals(user) || systemId.equals(user)) );
     }
 }

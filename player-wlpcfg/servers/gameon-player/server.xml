@@ -24,18 +24,18 @@
 
   <couchdb id="couchdb" jndiName="couchdb/connector" libraryRef="couchdb-lib" password="${env.COUCHDB_PASSWORD}" url="${env.COUCHDB_URL}" username="${env.COUCHDB_USER}"/>
 
-    <library id="couchdb-lib" >
-        <fileset dir='${server.config.dir}/lib' />
-    </library>
+  <library id="couchdb-lib" >
+    <fileset dir='${server.config.dir}/lib' />
+  </library>
 
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
-    <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
-        <accessLogging
-            filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
-            logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
-        </accessLogging>    
-    </httpEndpoint>
+  <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
+    <accessLogging
+        filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
+        logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
+    </accessLogging>
+  </httpEndpoint>
 
   <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/play" maxAge="86400"/>
   <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/players" maxAge="86400"/>
@@ -70,17 +70,21 @@
 
   <applicationMonitor dropinsEnabled="false" updateTrigger="polled"/>
 
+  <!-- The JVM can get confused about available CPU in virtualized envs -->
+  <executor coreThreads="10"  />
+
+  <!-- new API as a separate war -->
   <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
-      <classloader commonLibraryRef="couchdb-lib"></classloader>
+    <classloader commonLibraryRef="couchdb-lib"></classloader>
   </webApplication>
 
 
   <!-- Preserve the old API as a separate war. Do not inspect it for swagger -->
   <webApplication contextRoot="/play" id="play-app" location="play-app.war" name="play-app">
-      <classloader commonLibraryRef="couchdb-lib"></classloader>
+    <classloader commonLibraryRef="couchdb-lib"></classloader>
   </webApplication>
   <apiDiscovery>
      <webModuleDoc contextRoot="/play" enabled="false" />
   </apiDiscovery>
- 
+
 </server>
