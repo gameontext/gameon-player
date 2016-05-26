@@ -10,4 +10,5 @@ jdk:
 
 after_success:
   - docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+  - docker build -t ${DOCKER_REPO}/${DOCKER_IMAGE} player-wlpcfg/
   - docker push ${DOCKER_REPO}/${DOCKER_IMAGE}
