@@ -50,7 +50,7 @@
   <jndiEntry jndiName="playerUrl" value="${env.PLAYER_URL}"/>
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
-  <logging traceSpecification="*=info:org.gameon.*=all"/>
+  <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameon.*=all:org.gameon.player.*=all:net.wasdev.gameon.*=all"/>
 
   <!-- Twitter Application Info... -->
   <jndiEntry jndiName="twitterOAuthConsumerKey" value="${env.TWITTER_CONSUMER_KEY}"/>
@@ -67,6 +67,8 @@
   <!-- Github Application Info...  -->
   <jndiEntry jndiName="gitHubOAuthKey" value="${env.GITHUB_APP_ID}"/>
   <jndiEntry jndiName="gitHubOAuthSecret" value="${env.GITHUB_APP_SECRET}"/>
+  
+  <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_URL}"/>
 
   <applicationMonitor dropinsEnabled="false" updateTrigger="polled"/>
 

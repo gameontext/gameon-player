@@ -38,6 +38,8 @@ import javax.ws.rs.core.Response;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.UpdateConflictException;
 
+import net.wasdev.gameon.player.Kafka.PlayerEvent;
+
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -52,6 +54,9 @@ public class PlayerResource {
 
     @Inject
     protected CouchDbConnector db;
+    
+    @Inject
+    Kafka kafka;
     
     @Resource(lookup = "systemId")
     String systemId;
@@ -102,6 +107,7 @@ public class PlayerResource {
                 //this player.. (unless player apikey is currently access_denied.)
                 if(requested.getApiKey()==null && !newPlayer.getApiKey().equals(ACCESS_DENIED)){
                     newPlayer.generateApiKey();
+                    kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, newPlayer);
                 }               
             }else{
                 throw new PlayerNotFoundException("Id not known");
@@ -109,6 +115,8 @@ public class PlayerResource {
         }
               
         db.update(newPlayer);
+                
+        kafka.publishPlayerEvent(PlayerEvent.UPDATE, newPlayer);
 
         return Response.status(204).build();
     }
@@ -130,6 +138,8 @@ public class PlayerResource {
         }else{
             throw new PlayerNotFoundException("Id not known");
         }
+        
+        kafka.publishPlayerEvent(PlayerEvent.DELETE, p);
         
         return Response.status(200).build();
     }
@@ -170,6 +180,8 @@ public class PlayerResource {
             rc = 409;
             result.add("location", currentLocation);
         }
+        
+        kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p);
 
         return Response.status(rc).entity(result.build()).build();
     }
