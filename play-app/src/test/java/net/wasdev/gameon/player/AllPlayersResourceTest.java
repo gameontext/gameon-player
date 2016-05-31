@@ -43,6 +43,7 @@ public class AllPlayersResourceTest {
     @Tested AllPlayersResource tested;
     @Injectable CouchDbConnector dbi;
     @Injectable HttpServletRequest request;
+    @Injectable Kafka kafka;
 
     @Injectable(value = "testId")
     String systemId = "testId";

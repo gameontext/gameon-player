@@ -33,6 +33,8 @@ import javax.ws.rs.core.Response;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
 
+import net.wasdev.gameon.player.Kafka.PlayerEvent;
+
 /**
  * All the players, and searching for players.
  *
@@ -44,6 +46,9 @@ public class AllPlayersResource {
 
     @Inject
     protected CouchDbConnector db;
+    
+    @Inject
+    Kafka kafka;
 
     @Resource(lookup = "systemId")
     String systemId;
@@ -90,6 +95,8 @@ public class AllPlayersResource {
         }
 
         db.create(player);
+        
+        kafka.publishPlayerEvent(PlayerEvent.CREATE, player);
 
         return Response.status(201).build();
     }
