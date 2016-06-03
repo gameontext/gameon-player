@@ -15,6 +15,7 @@
  *******************************************************************************/
 package net.wasdev.gameon.player;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@ApplicationScoped
 public class JaxbJsonProvider extends JacksonJaxbJsonProvider {
 
 }

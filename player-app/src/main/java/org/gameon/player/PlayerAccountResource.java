@@ -225,6 +225,53 @@ public class PlayerAccountResource {
         return Response.status(rc).entity(finalLocation).build();
     }
     
+    @GET
+    @Path("/location")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get a specific player location", 
+        notes = "", 
+        response = String.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+    })
+    public String getPlayerLocation(
+            @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
+        PlayerFull p;
+        
+        p = db.get(PlayerFull.class, id); // throws DocumentNotFoundException
+        
+        return p.getLocation();
+    }
+    
+    @GET
+    @Path("/apikey")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Get a specific player apikey", 
+        notes = "", 
+        response = String.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+    })
+    public String getPlayerApiKey(
+            @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
+        
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
+        
+        if (unauthorizedId(authId, id)) {
+            throw new PlayerAccountModificationException(
+                    Response.Status.FORBIDDEN,
+                    "APIKey For Player " + id + " could not be retrieved",
+                    authId + " is not allowed to view information");
+        }
+        
+        PlayerFull p = db.get(PlayerFull.class, id);  // throws DocumentNotFoundException
+        
+        return p.getApiKey();
+    }
+    
 
     @PUT
     @Path("/apikey")
@@ -246,7 +293,7 @@ public class PlayerAccountResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         // we don't want to allow this method to be invoked by the server (must be at user's request).
-        Claims claims = (Claims) httpRequest.getAttribute("player.claims");       
+        Claims claims = (Claims) httpRequest.getAttribute("player.claims");
         if ( claims.getAudience().equals("server")) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
