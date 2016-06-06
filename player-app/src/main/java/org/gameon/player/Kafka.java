@@ -27,7 +27,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.gameon.player.entity.Player;
+import org.gameon.player.entity.PlayerDbRecord;
 import org.gameon.player.utils.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -95,7 +95,7 @@ public class Kafka {
    
    protected final ObjectMapper mapper = new ObjectMapper();
    public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,CREATE,DELETE}; 
-   public void publishPlayerEvent(PlayerEvent eventType, Player player){
+   public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player){
        try{
            //note that messagehub topics are charged, so we must only
            //create them via the bluemix ui, to avoid accidentally 

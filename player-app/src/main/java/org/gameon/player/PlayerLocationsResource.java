@@ -33,7 +33,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
-import org.gameon.player.entity.PlayerFull;
+import org.gameon.player.entity.PlayerDbRecord;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -73,13 +73,13 @@ public class PlayerLocationsResource {
         Map<String,String> locations = new HashMap<String,String>();
         
         if(playerId!=null){
-            PlayerFull p = db.get(PlayerFull.class, playerId);
+            PlayerDbRecord p = db.get(PlayerDbRecord.class, playerId);
             if(siteId==null || siteId.equals(p.getLocation())){
                 locations.put(p.getId(), p.getLocation());
             }
         }else{
             ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
-            List<PlayerFull> results = db.queryView(q, PlayerFull.class);
+            List<PlayerDbRecord> results = db.queryView(q, PlayerDbRecord.class);
             results
                 .stream()
                 .filter( player -> siteId==null || siteId.equals(player.getLocation()))

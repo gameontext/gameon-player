@@ -37,9 +37,11 @@ dependencies {
     }
     couchdb ('com.google.oauth-client:google-oauth-client:1.20.0') {
         exclude group: 'com.fasterxml.jackson'
+        exclude group: 'org.slf4j'
     }
     couchdb ('com.google.api-client:google-api-client:1.19.1') {
         exclude group: 'com.fasterxml.jackson'
+        exclude group: 'org.slf4j'
     }
     couchdb 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.1.3'
     couchdb 'com.fasterxml.jackson.core:jackson-core:2.4.2'
@@ -49,7 +51,7 @@ dependencies {
     couchdb 'org.slf4j:jcl-over-slf4j:1.7.13'
     
     //the entire couch & jackson dependency collection will not 
-    /be packaged in the app, but supplied as a shared library
+    //be packaged in the app, but supplied as a shared library
     //to liberty. Thus this must be providedCompile.
     
     providedCompile configurations.couchdb    
@@ -60,10 +62,14 @@ dependencies {
     compile ('org.twitter4j:twitter4j-core:4.0.4') {
         exclude group: 'org.slf4j'
     }
-    compile 'com.restfb:restfb:1.15.0'
+    compile ('com.restfb:restfb:1.15.0') {
+        exclude group: 'org.slf4j'
+    }
     
     // kafka client =)
-    compile 'org.apache.kafka:kafka-clients:0.9.0.1'
+    compile ('org.apache.kafka:kafka-clients:0.9.0.1') {
+        exclude group: 'org.slf4j'
+    }
     
     jmockit 'org.jmockit:jmockit:1.22'
     testCompile 'junit:junit:4.12'

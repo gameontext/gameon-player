@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.gameon.player.utils.JWT;
 import org.gameon.player.utils.JWT.AuthenticationState;
 
-@WebFilter(filterName = "playerAuthFilter", urlPatterns = { "/players/*" })
+@WebFilter(filterName = "playerJWTAuthFilter", urlPatterns = { "/v1/*" })
 public class PlayerFilter implements Filter {
 
     @Resource(lookup = "jwtKeyStore")
@@ -116,8 +116,9 @@ public class PlayerFilter implements Filter {
                 }
             }
         }
-
+        
         JWT jwt = new JWT(signingCert, jwtHeader, jwtParam);
+        
         if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
             //JWT is not valid, however we let GET requests with no parameters through
             if(!("GET".equals(req.getMethod()) && (req.getQueryString()==null || req.getQueryString().isEmpty()))){

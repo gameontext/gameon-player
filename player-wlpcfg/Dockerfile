@@ -1,4 +1,4 @@
-FROM websphere-liberty:beta
+FROM websphere-liberty:latest
 
 MAINTAINER Ben Smith
 

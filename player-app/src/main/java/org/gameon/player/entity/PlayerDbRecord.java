@@ -31,9 +31,69 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Player account information")
 @JsonInclude(Include.NON_EMPTY)
-public class PlayerFull extends Player {
+public class PlayerDbRecord {
 
     private static final long serialVersionUID = 1L;
+
+    /** Player account/record id */
+    @JsonProperty("_id")
+    @ApiModelProperty(
+            value = "Unique player id",
+            readOnly = true,
+            name = "_id",
+            example = "oauthProvider:userid",
+            required = true)
+    protected String id;
+
+    /** Document revision */
+    @JsonProperty("_rev")
+    @ApiModelProperty(hidden = true)
+    protected String rev;
+
+    @ApiModelProperty(
+            value = "Player name",
+            example = "Harriet",
+            required = true)
+    protected String name;
+        
+    @ApiModelProperty(
+            value = "Favorite color",
+            example = "Tangerine",
+            required = true)
+    protected String favoriteColor;
+
+    @JsonCreator
+    public PlayerDbRecord() {}
+
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getRev() {
+        return rev;
+    }
+    public void setRev(String rev) {
+        this.rev = rev;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getFavoriteColor() {
+        return favoriteColor;
+    }
+
+    public void setFavoriteColor(String favoriteColor) {
+        this.favoriteColor = favoriteColor;
+    }
 
     @ApiModelProperty(hidden = true)
     private String apiKey;
@@ -41,11 +101,8 @@ public class PlayerFull extends Player {
     @ApiModelProperty(hidden = true)
     private String location;
     
-    @JsonCreator
-    public PlayerFull() {}
-
     @JsonIgnore
-    public void update(Player p) {
+    public void update(PlayerArgument p) {
         this.id = p.id;
         this.rev = p.rev;
         this.name = p.name;

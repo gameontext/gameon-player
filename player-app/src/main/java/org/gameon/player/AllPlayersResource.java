@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -37,8 +38,9 @@ import javax.ws.rs.core.Response;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
 import org.gameon.player.control.PlayerAccountModificationException;
-import org.gameon.player.entity.Player;
-import org.gameon.player.entity.PlayerFull;
+import org.gameon.player.entity.PlayerArgument;
+import org.gameon.player.entity.PlayerDbRecord;
+import org.gameon.player.entity.PlayerResponse;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,22 +70,25 @@ public class AllPlayersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "List all players",
         notes = "Get a list of registered players. Use link headers for pagination.",
-        response = Player.class,
+        response = PlayerResponse.class,
         responseContainer = "List")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = Messages.SUCCESSFUL),
         @ApiResponse(code = 204, message = Messages.CONFLICT)
     })
     public Response getAllPlayers() throws IOException {
-
         ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
-        List<Player> results = db.queryView(q, Player.class);
-        GenericEntity<List<Player>> entity = new GenericEntity<List<Player>>(results) {};
-        
+        List<PlayerDbRecord> results = db.queryView(q, PlayerDbRecord.class);
         if ( results.isEmpty() )
             return Response.noContent().build();
-        else {           
+        else {
+            List<PlayerResponse> prs = results.stream()
+                    .map(record -> {PlayerResponse pr = new PlayerResponse(record); pr.setCredentials(null); return pr;})
+                    .collect(Collectors.toList());
+            
             // TODO -- this should be done better. Stream, something.
+            GenericEntity<List<PlayerResponse>> entity = new GenericEntity<List<PlayerResponse>>(prs) {};
+            
             return Response.ok().entity(entity).build();
         }
     }
@@ -96,14 +101,14 @@ public class AllPlayersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Create a new player account",
         notes = "",
-        response = Player.class,
+        response = PlayerResponse.class,
         code = HttpURLConnection.HTTP_CREATED )
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_CREATED, message = Messages.SUCCESSFUL),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Authenticated user id must match new player id"),
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT)
         })
-    public Response createPlayer(Player player) throws IOException {
+    public Response createPlayer(PlayerArgument player) throws IOException {
 
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
@@ -116,14 +121,16 @@ public class AllPlayersResource {
                     "Authenticated id must match new player id");
         }
         
-        PlayerFull pFull = new PlayerFull();
+        PlayerDbRecord pFull = new PlayerDbRecord();
         pFull.update(player);   // get all proposed updates
         pFull.generateApiKey(); // make sure an API key is generated for the new user
 
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
+        
+        PlayerResponse pr = new PlayerResponse(pFull); 
 
-        return Response.created(URI.create("/players/v1/accounts/" + player.getId())).entity(pFull).build();
+        return Response.created(URI.create("/players/v1/accounts/" + player.getId())).entity(pr).build();
     }
 
 

@@ -27,7 +27,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "Player account information")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Player {
+public class PlayerArgument {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,7 +59,7 @@ public class Player {
     protected String favoriteColor;
 
     @JsonCreator
-    public Player() {}
+    public PlayerArgument() {}
 
     public String getId() {
         return id;
