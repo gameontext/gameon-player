@@ -245,9 +245,10 @@ public class PlayerResourceTest {
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerDbRecord p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should have been updated ", proposed.getName(), p.getName());
             assertEquals("Player Color should have been updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should should have been updated ", proposed.getId(), p.getId());
@@ -284,14 +285,16 @@ public class PlayerResourceTest {
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerDbRecord p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
             // Server is not allowed to change the player's name or favorite color
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should not have been updated", proposed.getName(), p.getName());
             assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", proposed.getId(), p.getId());
-            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getApiKey());
+            assertNotNull("Player should have credentials block", p.getCredentials());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getCredentials().getSharedSecret());
 
             dbi.update(dbEntry); times = 1;
         }};
@@ -361,19 +364,19 @@ public class PlayerResourceTest {
         PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
-        //proposed.setApiKey("FISH"); //doesn't matter what the value is, as long as its not null.
         proposed.setId(playerId);
 
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerDbRecord p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name was not updated ", proposed.getName(), p.getName());
             assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", proposed.getId(), p.getId());
-            assertEquals("Player ApiKey should not have been updated ", "ShinyShoes", p.getApiKey());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getCredentials().getSharedSecret());
 
             dbi.update(dbEntry); times = 1;
         }};
@@ -410,13 +413,15 @@ public class PlayerResourceTest {
         new Verifications() {{
 
             PlayerDbRecord p;
+            PlayerResponse pr;
             dbi.update(p = withCapture()); times = 1;
-            Response.ok(p); times = 1;
+            Response.ok(pr = withCapture()); times = 1;
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should not have changed ", dbEntry.getName(), p.getName());
             assertEquals("Player Color should not have changed ", dbEntry.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", dbEntry.getId(), p.getId());
-            assertEquals("Player ApiKey should not have been updated ", "ShinyShoes", p.getApiKey());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getApiKey());
         }};
     }
 

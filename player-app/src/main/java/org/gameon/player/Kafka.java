@@ -47,43 +47,51 @@ public class Kafka {
 
    @PostConstruct
    public void init(){
-     //Kafka client expects this property to be set and pointing at the
-     //jaas config file.. except when running in liberty, we don't need
-     //one of those.. thankfully, neither does kafka client, it just doesn't
-     //know that.. so we'll set this to an empty string to bypass the check.
-     if(System.getProperty("java.security.auth.login.config")==null){
-       System.setProperty("java.security.auth.login.config", "");
+      
+     try{
+       
+         //Kafka client expects this property to be set and pointing at the
+         //jaas config file.. except when running in liberty, we don't need
+         //one of those.. thankfully, neither does kafka client, it just doesn't
+         //know that.. so we'll set this to an empty string to bypass the check.
+         if(System.getProperty("java.security.auth.login.config")==null){
+           System.setProperty("java.security.auth.login.config", "");
+         }
+    
+         Log.log(Level.INFO, this, "Initializing kafka producer for url {0}", kafkaUrl);
+         Properties producerProps = new Properties();
+         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUrl);
+         producerProps.put(ProducerConfig.ACKS_CONFIG,"-1");
+         producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-map");
+         producerProps.put(ProducerConfig.RETRIES_CONFIG,0);
+         producerProps.put(ProducerConfig.BATCH_SIZE_CONFIG,16384);
+         producerProps.put(ProducerConfig.LINGER_MS_CONFIG,1);
+         producerProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG,33554432);
+         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+    
+         //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
+         //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
+         //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
+         boolean multipleHosts = kafkaUrl.indexOf(",") != -1;
+         if(multipleHosts){
+           Log.log(Level.INFO, this, "Initializing SSL Config for MessageHub");
+           producerProps.put("security.protocol","SASL_SSL");
+           producerProps.put("ssl.protocol","TLSv1.2");
+           producerProps.put("ssl.enabled.protocols","TLSv1.2");
+           Path p = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
+           producerProps.put("ssl.truststore.location", p.toString());
+           producerProps.put("ssl.truststore.password","changeit");
+           producerProps.put("ssl.truststore.type","JKS");
+           producerProps.put("ssl.endpoint.identification.algorithm","HTTPS");
+         }
+    
+         producer = new KafkaProducer<String, String>(producerProps);
+     
+     }catch(Exception e){
+         System.err.println("ERROR DURING KAFKA INIT.. ");
+         e.printStackTrace();
      }
-
-     Log.log(Level.INFO, this, "Initializing kafka producer for url {0}", kafkaUrl);
-     Properties producerProps = new Properties();
-     producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUrl);
-     producerProps.put(ProducerConfig.ACKS_CONFIG,"-1");
-     producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-map");
-     producerProps.put(ProducerConfig.RETRIES_CONFIG,0);
-     producerProps.put(ProducerConfig.BATCH_SIZE_CONFIG,16384);
-     producerProps.put(ProducerConfig.LINGER_MS_CONFIG,1);
-     producerProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG,33554432);
-     producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
-     producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
-
-     //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
-     //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
-     //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
-     boolean multipleHosts = kafkaUrl.indexOf(",") != -1;
-     if(multipleHosts){
-       Log.log(Level.INFO, this, "Initializing SSL Config for MessageHub");
-       producerProps.put("security.protocol","SASL_SSL");
-       producerProps.put("ssl.protocol","TLSv1.2");
-       producerProps.put("ssl.enabled.protocols","TLSv1.2");
-       Path p = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
-       producerProps.put("ssl.truststore.location", p.toString());
-       producerProps.put("ssl.truststore.password","changeit");
-       producerProps.put("ssl.truststore.type","JKS");
-       producerProps.put("ssl.endpoint.identification.algorithm","HTTPS");
-     }
-
-     producer = new KafkaProducer<String, String>(producerProps);
    }
 
    public void publishMessage(String topic, String key, String message){
