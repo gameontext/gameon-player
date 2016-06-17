@@ -225,13 +225,12 @@ public class PlayerAccountResource {
 
             rc = HttpServletResponse.SC_OK;
             finalLocation.setLocation(newLocation);
+            kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p);
         } else {
             rc = HttpServletResponse.SC_CONFLICT;
             finalLocation.setLocation(p.getLocation());
         }
         
-        kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p);
-
         return Response.status(rc).entity(finalLocation).build();
     }
     
@@ -330,13 +329,17 @@ public class PlayerAccountResource {
         
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id);  // throws DocumentNotFoundException
 
-        if( p.getApiKey() == null && !p.getApiKey().equals(ACCESS_DENIED)){
+        //if no existing apikey, or apikey exists, but has not been perma-banned..
+        if( !ACCESS_DENIED.equals(p.getApiKey())){
             p.generateApiKey();
+            kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, p);
+            return Response.ok(p).build();
+        }else{
+            throw new PlayerAccountModificationException(
+                    Response.Status.FORBIDDEN,
+                    "Unable to update player location",
+                    "ApiKey use is banned for player id " + p.getId());
         }
-        
-        kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, p);
-
-        return Response.ok(p).build();
     }
 
     private boolean unauthorizedId(String user, String player) {
