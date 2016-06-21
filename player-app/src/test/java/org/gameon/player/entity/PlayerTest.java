@@ -24,7 +24,7 @@ import org.junit.Test;
 public class PlayerTest {
     @Test
     public void testApiKeyGeneration(){
-        PlayerFull p = new PlayerFull();
+        PlayerDbRecord p = new PlayerDbRecord();
         String before = p.getApiKey();
         p.generateApiKey();
         String after1 = p.getApiKey();

@@ -45,6 +45,8 @@ public class Kafka {
 
    @PostConstruct
    public void init(){
+       
+       try {
      //Kafka client expects this property to be set and pointing at the
      //jaas config file.. except when running in liberty, we don't need
      //one of those.. thankfully, neither does kafka client, it just doesn't
@@ -82,6 +84,11 @@ public class Kafka {
      }
 
      producer = new KafkaProducer<String, String>(producerProps);
+     
+     }catch(Exception e){
+         System.err.println("ERROR DURING KAFKA INIT.. ");
+         e.printStackTrace();
+     }
    }
 
    public void publishMessage(String topic, String key, String message){

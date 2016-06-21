@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package net.wasdev.gameon.player;
+package org.gameon.player.entity;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+@ApiModel(description = "Player credentials")
+public class PlayerCredentials {
 
-@Provider
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-@ApplicationScoped
-public class JsonProvider extends JacksonJsonProvider {
+    @ApiModelProperty(value = "shared secret for player", example = "fjhre8h49hf438u9h45", required = true)
+    protected String sharedSecret;
 
+    public String getSharedSecret() {
+        return sharedSecret;
+    }
+
+    public void setSharedSecret(String sharedSecret) {
+        this.sharedSecret = sharedSecret;
+    }
 }

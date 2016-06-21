@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.gameon.player;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -29,9 +31,11 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.UpdateConflictException;
 import org.ektorp.ViewQuery;
 import org.gameon.player.control.PlayerAccountModificationException;
-import org.gameon.player.entity.Player;
-import org.gameon.player.entity.PlayerFull;
+import org.gameon.player.entity.PlayerArgument;
+import org.gameon.player.entity.PlayerDbRecord;
+import org.gameon.player.entity.PlayerResponse;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,117 +56,108 @@ public class AllPlayersResourceTest {
 
     @Injectable(value = "testId")
     String systemId = "testId";
+    
+    PlayerDbRecord playerDb = new PlayerDbRecord();
+    PlayerArgument playerArg = new PlayerArgument();
+    @Before
+    public void initPlayer(){
+        playerDb.setId("123");
+        playerDb.setName("Chunky");
+        playerDb.setFavoriteColor("Fuschia");
+        playerDb.setLocation("Home");
+        playerDb.setRev("high");
+        playerDb.setApiKey("FISH");
+        
+        playerArg.setId("123");
+        playerArg.setName("Chunky");
+        playerArg.setFavoriteColor("Fuschia");
+        playerArg.setRev("high");
+    }
 
     @Test
-    public void checkCreateMissingId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
-        String playerId = "fish";
-
-        Player dbEntry = new Player();
-        dbEntry.setName("Kitten");
-        dbEntry.setFavoriteColor("Tangerine");
-        dbEntry.setId(playerId);
+    public void checkCreateMissingId() throws IOException{
 
         new Expectations() {{
             request.getAttribute("player.id"); returns(null);
         }};
 
         try {
-            tested.createPlayer(dbEntry);
+            tested.createPlayer(playerArg);
+            fail("Expected account modification exception");
         } catch ( PlayerAccountModificationException pme ) {
             Assert.assertEquals(Response.Status.FORBIDDEN, pme.getStatus());
         }
     }
 
     @Test
-    public void checkMismatchedId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
-        String playerId = "fish";
-
-        PlayerFull dbEntry = new PlayerFull();
-        dbEntry.setApiKey("ShinyShoes");
-        dbEntry.setName("Kitten");
-        dbEntry.setFavoriteColor("Tangerine");
-        dbEntry.setId(playerId);
-        dbEntry.setLocation("Earth");
+    public void checkMismatchedId() throws IOException{
 
         new Expectations() {{
-            request.getAttribute("player.id"); returns(playerId+"FISH");
+            request.getAttribute("player.id"); returns(playerArg.getId()+"FISH");
         }};
 
         try {
-            tested.createPlayer(dbEntry);
+            tested.createPlayer(playerArg);
+            fail("Expected account modification exception");
         } catch ( PlayerAccountModificationException pme ) {
             Assert.assertEquals(Response.Status.FORBIDDEN, pme.getStatus());
         }
     }
 
     @Test(expected=UpdateConflictException.class)
-    public void checkAlreadyKnownId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
-        String playerId = "fish";
-
-        Player dbEntry = new Player();
-        dbEntry.setName("Kitten");
-        dbEntry.setFavoriteColor("Tangerine");
-        dbEntry.setId(playerId);
+    public void checkAlreadyKnownId() throws IOException{
 
         new Expectations() {{
-            request.getAttribute("player.id"); returns(playerId);
-            dbi.create(withAny(PlayerFull.class)); result = new UpdateConflictException();
+            request.getAttribute("player.id"); returns(playerArg.getId());
+            dbi.create(withAny(PlayerDbRecord.class)); result = new UpdateConflictException();
         }};
 
-        tested.createPlayer(dbEntry);
+        tested.createPlayer(playerArg);
     }
 
     @Test
-    public void checkCreateSystemId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
-        String playerId = "fish";
-
-        Player dbEntry = new Player();
-        dbEntry.setName("Kitten");
-        dbEntry.setFavoriteColor("Tangerine");
-        dbEntry.setId(playerId);
+    public void checkCreateSystemId(@Mocked Response response) throws IOException{
 
         new Expectations() {{
             request.getAttribute("player.id"); returns(systemId);
         }};
 
-        tested.createPlayer(dbEntry);
+        tested.createPlayer(playerArg);
 
         new Verifications() {{
-            Response.created(URI.create("/players/v1/accounts/" + playerId)); times = 1;
-            dbi.create(withAny(PlayerFull.class)); times = 1;
+            Response.created(URI.create("/players/v1/accounts/" + playerArg.getId())); times = 1;
+            dbi.create(withAny(PlayerDbRecord.class)); times = 1;
         }};
     }
 
     @Test
     public void checkGetAllWithSystemId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
 
-        Player one = new Player();
-        one.setName("Kitten");
-        one.setFavoriteColor("Tangerine");
-        one.setId("one");
+        PlayerDbRecord another = new PlayerDbRecord();
+        another.setName("Kitten");
+        another.setFavoriteColor("Tangerine");
+        another.setId("one");
+        another.setLocation("Earth");
+        another.setRev("343");
 
-        Player two = new Player();
-        two.setName("Block");
-        two.setFavoriteColor("Tangerine");
-        two.setId("two");
-
-        List<Player> players = new ArrayList<Player>();
-        players.add(one);
-        players.add(two);
+        List<PlayerDbRecord> players = new ArrayList<PlayerDbRecord>();
+        players.add(playerDb);
+        players.add(another);
 
         new Expectations() {{
-            dbi.queryView((ViewQuery)any,Player.class); returns(players);
+            dbi.queryView((ViewQuery)any,PlayerDbRecord.class); returns(players);
         }};
         
         tested.getAllPlayers();
 
         new Verifications() {{
-            GenericEntity<List<Player>> entity;            
+            GenericEntity<List<PlayerResponse>> entity;            
             ResponseBuilder b = Response.ok(); times = 1;
             b.entity(entity = withCapture());
             
-            List<Player> resultList = (entity.getEntity());
-            Assert.assertEquals("Players list is not the expected result", players, resultList);
+            List<PlayerResponse> resultList = (entity.getEntity());
+            Assert.assertEquals("Players list is not the expected size", players.size(), resultList.size());
+            //TODO: verify 
         }};
         
     }

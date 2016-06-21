@@ -16,6 +16,8 @@
 package org.gameon.player;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 
@@ -28,8 +30,10 @@ import org.ektorp.DocumentNotFoundException;
 import org.ektorp.UpdateConflictException;
 import org.gameon.player.control.PlayerAccountModificationException;
 import org.gameon.player.entity.LocationChange;
-import org.gameon.player.entity.Player;
-import org.gameon.player.entity.PlayerFull;
+import org.gameon.player.entity.PlayerArgument;
+import org.gameon.player.entity.PlayerDbRecord;
+import org.gameon.player.entity.PlayerResponse;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,93 +56,114 @@ public class PlayerResourceTest {
 
     @Injectable(value="testId")
     String systemId = "testId";
+    
+    PlayerDbRecord playerDb = new PlayerDbRecord();
+    PlayerArgument playerArg = new PlayerArgument();
+    @Before
+    public void initPlayer(){
+        playerDb.setId("123");
+        playerDb.setName("Chunky");
+        playerDb.setFavoriteColor("Fuschia");
+        playerDb.setLocation("Home");
+        playerDb.setRev("high");
+        playerDb.setApiKey("FISH");
+        
+        playerArg.setId("123");
+        playerArg.setName("Chunky");
+        playerArg.setFavoriteColor("Fuschia");
+        playerArg.setRev("high");
+    }
 
     @Test
-    public void checkGetMatchingId(@Mocked Player player) throws IOException {
+    public void checkGetMatchingId() throws IOException {
         String playerId = "fish";
         
         new Expectations() {{
             request.getAttribute("player.id"); returns(playerId);
-            dbi.get(PlayerFull.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
-        Player result = tested.getPlayerInformation(playerId);
+        PlayerResponse result = tested.getPlayerInformation(playerId);
 
-        assertEquals( "Method should return the mocked player", player, result);
+        assertEquals( "Method should return the mocked player", playerDb.getId(), result.getId());
+        assertNotNull( "Method should return credentials for matching id",result.getCredentials());
     }
 
     @Test
-    public void checkGetMissingId(@Mocked Player player) throws IOException {
+    public void checkGetMissingId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
             request.getAttribute("player.id"); returns(null);
-            dbi.get(Player.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
-        Player result = tested.getPlayerInformation(playerId);
+        PlayerResponse result = tested.getPlayerInformation(playerId);
 
-        assertEquals( "Method should return the mocked player", player, result);
+        assertEquals( "Method should return the mocked player", playerDb.getId(), result.getId());
+        assertNull( "Method should not return credentials for missing id",result.getCredentials());
     }
 
     @Test
-    public void checkMismatchedId(@Mocked Player player) throws IOException {
+    public void checkMismatchedId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
             request.getAttribute("player.id"); returns("wibble");
-            dbi.get(Player.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
-        Player result = tested.getPlayerInformation(playerId);
+        PlayerResponse result = tested.getPlayerInformation(playerId);
 
-        assertEquals( "Method should return the mocked player", player, result);
+        assertEquals( "Method should return the mocked player", playerDb.getId(), result.getId());
+        assertNull( "Method should not return credentials for mismatched id",result.getCredentials());
     }
 
     @Test(expected=DocumentNotFoundException.class)
-    public void checkUnknownId(@Mocked Player player) throws IOException {
+    public void checkUnknownId(@Mocked PlayerDbRecord record, @Mocked PlayerResponse player) throws IOException {
         String playerId = "fish";
         new Expectations() {{
             request.getAttribute("player.id"); returns(playerId);
-            dbi.get(PlayerFull.class, playerId); result = new DocumentNotFoundException("player.id");
+            dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
         tested.getPlayerInformation(playerId);
     }
 
     @Test
-    public void checkGetSystemId(@Mocked Player player) throws IOException {
+    public void checkGetSystemId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
-            dbi.get(PlayerFull.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
-        Player result = tested.getPlayerInformation(playerId);
+        PlayerResponse result = tested.getPlayerInformation(playerId);
 
-        assertEquals( "Method should return the mocked player", player, result);
+        assertEquals( "Method should return the mocked player", playerDb.getId(), result.getId());
+        assertNotNull( "Method should return credentials for system id",result.getCredentials());
     }
 
     @Test
-    public void checkDeleteMatchingId(@Mocked Player player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
+    public void checkDeleteMatchingId( @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
 
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
-            dbi.get(Player.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
         tested.removePlayer(playerId);
 
         new Verifications() {{
             Response.status(204); times = 1;
-            dbi.delete(player); times = 1;
+            dbi.delete(playerDb); times = 1;
             builder.build(); times = 1;
         }};
     }
 
     @Test(expected = PlayerAccountModificationException.class)
-    public void checkDeleteMissingId(@Mocked Player player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
+    public void checkDeleteMissingId(@Mocked PlayerArgument player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
 
         String playerId = "fish";
         new Expectations() {{
@@ -150,26 +175,26 @@ public class PlayerResourceTest {
     }
 
     @Test
-    public void checkDeleteSytemId(@Mocked Player player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
+    public void checkDeleteSytemId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
 
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
-            dbi.get(Player.class, playerId); returns(player);
+            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
 
         tested.removePlayer(playerId);
 
         new Verifications() {{
             Response.status(204); times = 1;
-            dbi.delete(player); times = 1;
+            dbi.delete(playerDb); times = 1;
             builder.build(); times = 1;
         }};
     }
 
     @Test(expected = PlayerAccountModificationException.class)
-    public void checkDeleteMismatchedId(@Mocked Player player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
+    public void checkDeleteMismatchedId(@Mocked PlayerArgument player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
 
         String playerId = "fish";
         new Expectations() {{
@@ -181,13 +206,13 @@ public class PlayerResourceTest {
     }
 
     @Test(expected=DocumentNotFoundException.class)
-    public void checkDeleteUnknownId(@Mocked Player player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
+    public void checkDeleteUnknownId(@Mocked PlayerArgument player, @Mocked Response response, @Mocked ResponseBuilder builder) throws IOException{
 
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
-            dbi.get(Player.class, playerId); result = new DocumentNotFoundException("player.id");
+            dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
         tested.removePlayer(playerId);
@@ -197,7 +222,7 @@ public class PlayerResourceTest {
     public void checkClientUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -209,10 +234,10 @@ public class PlayerResourceTest {
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
-        Player proposed = new Player();
+        PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
         proposed.setId(playerId);
@@ -220,9 +245,10 @@ public class PlayerResourceTest {
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerFull p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should have been updated ", proposed.getName(), p.getName());
             assertEquals("Player Color should have been updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should should have been updated ", proposed.getId(), p.getId());
@@ -235,7 +261,7 @@ public class PlayerResourceTest {
     public void checkServerIdUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -248,10 +274,10 @@ public class PlayerResourceTest {
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
-        Player proposed = new Player();
+        PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
         proposed.setId(playerId);
@@ -259,14 +285,16 @@ public class PlayerResourceTest {
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerFull p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
             // Server is not allowed to change the player's name or favorite color
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should not have been updated", proposed.getName(), p.getName());
             assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", proposed.getId(), p.getId());
-            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getApiKey());
+            assertNotNull("Player should have credentials block", p.getCredentials());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getCredentials().getSharedSecret());
 
             dbi.update(dbEntry); times = 1;
         }};
@@ -281,10 +309,10 @@ public class PlayerResourceTest {
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
-            dbi.get(PlayerFull.class, playerId); result = new DocumentNotFoundException("player.id");
+            dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
-        Player proposed = new Player();
+        PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
         proposed.setId(playerId);
@@ -296,7 +324,7 @@ public class PlayerResourceTest {
     public void checkClientUpdateNoMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -309,7 +337,7 @@ public class PlayerResourceTest {
             request.getAttribute("player.id"); returns(playerId+"FISH");
         }};
 
-        Player proposed = new Player();
+        PlayerArgument proposed = new PlayerArgument();
 
         tested.updatePlayer(playerId, proposed);
     }
@@ -318,7 +346,7 @@ public class PlayerResourceTest {
     public void checkClientUpdateMatchingIdKeepApiKey(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -330,25 +358,25 @@ public class PlayerResourceTest {
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
-        PlayerFull proposed = new PlayerFull();
+        PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
-        proposed.setApiKey("FISH"); //doesn't matter what the value is, as long as its not null.
         proposed.setId(playerId);
 
         tested.updatePlayer(playerId, proposed);
 
         new Verifications() {{
-            PlayerFull p;
+            PlayerResponse p;
             Response.ok(p = withCapture());
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name was not updated ", proposed.getName(), p.getName());
             assertEquals("Player Color was not updated ", proposed.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", proposed.getId(), p.getId());
-            assertEquals("Player ApiKey should not have been updated ", "ShinyShoes", p.getApiKey());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getCredentials().getSharedSecret());
 
             dbi.update(dbEntry); times = 1;
         }};
@@ -361,23 +389,22 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("server");
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
         dbEntry.setId(playerId);
 
-        PlayerFull proposed = new PlayerFull();
+        PlayerArgument proposed = new PlayerArgument();
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
-        proposed.setApiKey("FISH"); //with aud server, fish will become the new key.
         proposed.setId(playerId);
         
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
 
@@ -385,14 +412,16 @@ public class PlayerResourceTest {
 
         new Verifications() {{
 
-            PlayerFull p;
+            PlayerDbRecord p;
+            PlayerResponse pr;
             dbi.update(p = withCapture()); times = 1;
-            Response.ok(p); times = 1;
+            Response.ok(pr = withCapture()); times = 1;
 
+            assertNotNull("Player response should not be null",p);
             assertEquals("Player Name should not have changed ", dbEntry.getName(), p.getName());
             assertEquals("Player Color should not have changed ", dbEntry.getFavoriteColor(), p.getFavoriteColor());
             assertEquals("Player Id should not have changed ", dbEntry.getId(), p.getId());
-            assertEquals("Player ApiKey should not have been updated ", "ShinyShoes", p.getApiKey());
+            assertEquals("Player ApiKey should not have changed ", "ShinyShoes", p.getApiKey());
         }};
     }
 
@@ -400,7 +429,7 @@ public class PlayerResourceTest {
     public void checkServerLocationUpdateMatchingId(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -416,7 +445,7 @@ public class PlayerResourceTest {
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
         tested.updatePlayerLocation(playerId, locChange);
@@ -432,7 +461,7 @@ public class PlayerResourceTest {
     public void checkServerLocationUpdateMatchingIdNoMatchingLocation(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -448,7 +477,7 @@ public class PlayerResourceTest {
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
         }};
 
         tested.updatePlayerLocation(playerId, locChange);
@@ -464,7 +493,7 @@ public class PlayerResourceTest {
     public void checkServerLocationUpdateMatchingIdConflict(@Mocked Response response, @Mocked ResponseBuilder builder) throws IOException {
         String playerId = "fish";
 
-        PlayerFull dbEntry = new PlayerFull();
+        PlayerDbRecord dbEntry = new PlayerDbRecord();
         dbEntry.setApiKey("ShinyShoes");
         dbEntry.setName("Kitten");
         dbEntry.setFavoriteColor("Tangerine");
@@ -480,7 +509,7 @@ public class PlayerResourceTest {
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerFull.class, playerId); returns(dbEntry);
+            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
             dbi.update(any); result = new UpdateConflictException();
         }};
 
