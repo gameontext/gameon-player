@@ -27,9 +27,9 @@
   <library id="couchdb-lib" >
     <fileset dir='${server.config.dir}/lib' />
   </library>
-  
+
   <!-- if running locally, set this value to 127.0.0.1 or ${env.DOCKER_MACHINE_NAME}
-       to enable apidiscover explorer 'try it out' functionality. 
+       to enable apidiscover explorer 'try it out' functionality.
     <variable name="defaultHostName" value="127.0.0.1" />
   -->
 
@@ -55,8 +55,6 @@
   <jndiEntry jndiName="playerUrl" value="${env.PLAYER_URL}"/>
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
-  <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameon.*=all:org.gameon.player.*=all:net.wasdev.gameon.*=all"/>
-
   <!-- Twitter Application Info... -->
   <jndiEntry jndiName="twitterOAuthConsumerKey" value="${env.TWITTER_CONSUMER_KEY}"/>
   <jndiEntry jndiName="twitterOAuthConsumerSecret" value="${env.TWITTER_CONSUMER_SECRET}"/>
@@ -72,11 +70,15 @@
   <!-- Github Application Info...  -->
   <jndiEntry jndiName="gitHubOAuthKey" value="${env.GITHUB_APP_ID}"/>
   <jndiEntry jndiName="gitHubOAuthSecret" value="${env.GITHUB_APP_SECRET}"/>
-  
+
   <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_URL}"/>
 
-  <applicationMonitor dropinsEnabled="false" updateTrigger="polled"/>
+  <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
+  <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameon.*=all:org.gameon.player.*=all:net.wasdev.gameon.*=all"/>
+
+  <!-- This is required to prevent the web apps from being lazily loaded -->
+  <webContainer deferServletLoad="false"/>
   <!-- The JVM can get confused about available CPU in virtualized envs -->
   <executor coreThreads="10"  />
 
