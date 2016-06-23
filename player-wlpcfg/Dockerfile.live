@@ -1,4 +1,4 @@
-FROM websphere-liberty:beta
+FROM websphere-liberty:latest
 
 MAINTAINER Erin Schnabel <schnabel@us.ibm.com> (@ebullientworks)
 
@@ -19,6 +19,6 @@ COPY ./startup.sh /opt/startup.sh
 ADD ./servers/gameon-player /opt/ibm/wlp/usr/servers/defaultServer/
 ADD ./server-logmet-dropin.xml /opt/ibm/wlp/usr/servers/defaultServer/configDropins/overrides/
 
-RUN /opt/ibm/wlp/bin/installUtility install  --acceptLicense /opt/ibm/wlp/usr/servers/defaultServer/server.xml
+RUN /opt/ibm/wlp/bin/installUtility install --acceptLicense /opt/ibm/wlp/usr/servers/defaultServer/server.xml
 
 CMD ["/opt/startup.sh"]

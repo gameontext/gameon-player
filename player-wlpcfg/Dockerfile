@@ -18,6 +18,6 @@ COPY ./startup.sh /opt/startup.sh
 
 ADD ./servers/gameon-player /opt/ibm/wlp/usr/servers/defaultServer/
 
-RUN /opt/ibm/wlp/bin/installUtility install  --acceptLicense /opt/ibm/wlp/usr/servers/defaultServer/server.xml
+RUN /opt/ibm/wlp/bin/installUtility install --acceptLicense /opt/ibm/wlp/usr/servers/defaultServer/server.xml
 
 CMD ["/opt/startup.sh"]
