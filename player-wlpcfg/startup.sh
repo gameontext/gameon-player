@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Configure amalgam8 for this container
+export A8_SERVICE=players:v1
+export A8_ENDPOINT_PORT=9443
+export A8_ENDPOINT_TYPE=https
+
 if [ "$SERVERDIRNAME" == "" ]; then
   SERVERDIRNAME=defaultServer
 else
@@ -47,27 +52,16 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   keytool -delete -storepass testOnlyKeystore -alias endeca -keystore security/key.jks
   keytool -v -importkeystore -srcalias 1 -alias 1 -destalias default -noprompt -srcstorepass keystore -deststorepass testOnlyKeystore -srckeypass keystore -destkeypass testOnlyKeystore -srckeystore cert.pkcs12 -srcstoretype PKCS12 -destkeystore security/key.jks -deststoretype JKS
 
-  export COUCHDB_URL=$(etcdctl get /couchdb/url)
+  export COUCHDB_SERVICE_URL=$(etcdctl get /couchdb/url)
   export COUCHDB_USER=$(etcdctl get /couchdb/user)
   export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
-  export PLAYER_URL=$(etcdctl get /player/url)
-  export TWITTER_CONSUMER_KEY=$(etcdctl get /player/twitter/id)
-  export TWITTER_CONSUMER_SECRET=$(etcdctl get /player/twitter/secret)
-  export FACEBOOK_APP_ID=$(etcdctl get /player/facebook/id)
-  export FACEBOOK_APP_SECRET=$(etcdctl get /player/facebook/secret)
-  export GOOGLE_APP_ID=$(etcdctl get /player/google/id)
-  export GOOGLE_APP_SECRET=$(etcdctl get /player/google/secret)
-  export GITHUB_APP_ID=$(etcdctl get /player/github/id)
-  export GITHUB_APP_SECRET=$(etcdctl get /player/github/secret)
-  export SUCCESS_CALLBACK=$(etcdctl get /player/callback)
-  export FAIL_CALLBACK=$(etcdctl get /player/failcallback)
   export LOGSTASH_ENDPOINT=$(etcdctl get /logstash/endpoint)
   export LOGMET_HOST=$(etcdctl get /logmet/host)
   export LOGMET_PORT=$(etcdctl get /logmet/port)
   export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
   export LOGMET_PWD=$(etcdctl get /logmet/pwd)
   export SYSTEM_ID=$(etcdctl get /player/system_id)
-  export KAFKA_URL=$(etcdctl get /kafka/url)
+  export KAFKA_SERVICE_URL=$(etcdctl get /kafka/url)
   export KAFKA_USER=$(etcdctl get /kafka/user)
   export KAFKA_PASSWORD=$(etcdctl get /passwords/kafka)
 
@@ -77,7 +71,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   mkdir -p configDropins/overrides
   mv kafkaDropin.xml configDropins/overrides
   wget https://github.com/ibm-messaging/message-hub-samples/raw/master/java/message-hub-liberty-sample/lib-message-hub/messagehub.login-1.0.0.jar
-  
+
 
   # Softlayer needs a logstash endpoint so we set up the server
   # to run in the background and the primary task is running the
@@ -103,10 +97,10 @@ else
   export AUTH_HOST="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@couchdb:5984"
   curl --fail -v -X GET ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
   if [ $? -eq 22 ]; then
-      curl -X PUT ${COUCHDB_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
+      curl -X PUT ${COUCHDB_SERVICE_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
   fi
 
   echo Have setup couchdb with user ${COUCHDB_USER}
 
-  exec /opt/ibm/wlp/bin/server run $SERVERDIRNAME
+  exec a8sidecar --supervise /opt/ibm/wlp/bin/server run defaultServer
 fi
