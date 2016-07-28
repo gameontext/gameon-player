@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,6 +32,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Player account information")
 @JsonInclude(Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PlayerDbRecord {
 
     private static final long serialVersionUID = 1L;
@@ -55,7 +57,7 @@ public class PlayerDbRecord {
             example = "Harriet",
             required = true)
     protected String name;
-        
+
     @ApiModelProperty(
             value = "Favorite color",
             example = "Tangerine",
@@ -100,7 +102,7 @@ public class PlayerDbRecord {
 
     @ApiModelProperty(hidden = true)
     private String location;
-    
+
     @JsonIgnore
     public void update(PlayerArgument p) {
         this.id = p.id;
@@ -108,7 +110,7 @@ public class PlayerDbRecord {
         this.name = p.name;
         this.favoriteColor = p.favoriteColor;
     }
-    
+
     @JsonIgnore
     public void removeProtected() {
         this.apiKey = null;
