@@ -1,0 +1,14 @@
+{
+    "language":"javascript",
+    "views":{
+      "uniquePlayers":{
+         "map":"function (doc) {\n  if ( doc.name && doc._id.indexOf(\"dummy\") < 0 ) {\n    emit(doc._id, 1);\n  }\n}"
+      },
+      "dummyPlayers":{
+         "map":"function (doc) {\n  if ( doc._id.indexOf(\"dummy\") >= 0 ) {\n    emit(doc._id, 1);\n  }\n}"
+      },
+      "all":{
+         "map":"function (doc) {\n  if ( doc.name ) {\n    emit(doc._id, 1);\n  }\n}"
+      }
+   }
+}

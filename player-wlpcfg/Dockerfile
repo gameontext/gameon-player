@@ -15,6 +15,7 @@ ENV SERVERDIRNAME player
 
 COPY ./forwarder.conf /opt/forwarder.conf
 COPY ./startup.sh /opt/startup.sh
+COPY ./player.json /opt/player.json
 
 ADD ./servers/gameon-player /opt/ibm/wlp/usr/servers/defaultServer/
 
