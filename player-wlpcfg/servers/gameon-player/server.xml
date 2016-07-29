@@ -69,13 +69,5 @@
   <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
     <classloader commonLibraryRef="couchdb-lib"></classloader>
   </webApplication>
-  
-  <!-- Preserve the old API as a separate war. Do not inspect it for swagger -->
-  <webApplication contextRoot="/play" id="play-app" location="play-app.war" name="play-app">
-     <classloader commonLibraryRef="couchdb-lib"></classloader>
-  </webApplication>
-  <apiDiscovery>
-     <webModuleDoc contextRoot="/play" enabled="false" />
-  </apiDiscovery>
 
 </server>
