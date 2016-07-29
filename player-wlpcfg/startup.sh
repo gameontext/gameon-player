@@ -95,12 +95,40 @@ else
   # We do not want to ruin the cloudant admin party, but our code is written to expect
   # that creds are required, so we should make sure the required user/password exist
   export AUTH_HOST="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@couchdb:5984"
-  curl --fail -v -X GET ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
-  if [ $? -eq 22 ]; then
-      curl -X PUT ${COUCHDB_SERVICE_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
+  SERVER_PATH=/opt/ibm/wlp/usr/servers/$SERVERDIRNAME
+
+  echo "** Testing connection to ${AUTH_HOST}"
+  curl --fail ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
+  RC=$?
+
+  # RC=7 means the host isn't there yet. Let's do some re-trying until it
+  # does start / is ready
+  while [ $RC -eq 7 ]; do
+      sleep 15
+
+      # recheck condition
+      echo "** Re-testing connection to ${AUTH_HOST}"
+      curl --fail ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
+      RC=$?
+  done
+
+  # RC=22 means the user doesn't exist
+  if [ $RC -eq 22 ]; then
+    echo "** Creating ${COUCHDB_USER}"
+    curl -X PUT ${COUCHDB_SERVICE_URL}/_config/admins/${COUCHDB_USER} -d \"${COUCHDB_PASSWORD}\"
   fi
 
-  echo Have setup couchdb with user ${COUCHDB_USER}
+  echo "** Checking database"
+  curl --fail ${AUTH_HOST}/playerdb
+  if [ $? -eq 22 ]; then
+    curl -X PUT $AUTH_HOST/playerdb
+  fi
 
-  exec a8sidecar --supervise /opt/ibm/wlp/bin/server run defaultServer
+  echo "** Checking design documents"
+  curl --fail ${AUTH_HOST}/playerdb/_design/players
+  if [ $? -eq 22 ]; then
+    curl -X PUT -H "Content-Type: application/json" --data @/opt/player.json ${AUTH_HOST}/playerdb/_design/players
+  fi
+
+  exec a8sidecar --supervise /opt/ibm/wlp/bin/server run $SERVERDIRNAME
 fi
