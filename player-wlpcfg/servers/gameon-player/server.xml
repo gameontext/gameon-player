@@ -22,7 +22,7 @@
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
 
-  <couchdb id="couchdb" jndiName="couchdb/connector" libraryRef="couchdb-lib" password="${env.COUCHDB_PASSWORD}" url="${env.COUCHDB_URL}" username="${env.COUCHDB_USER}"/>
+  <couchdb id="couchdb" jndiName="couchdb/connector" libraryRef="couchdb-lib" password="${env.COUCHDB_PASSWORD}" url="${env.COUCHDB_SERVICE_URL}" username="${env.COUCHDB_USER}"/>
 
   <library id="couchdb-lib" >
     <fileset dir='${server.config.dir}/lib' />
@@ -35,7 +35,7 @@
 
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
-  <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
+  <httpEndpoint host="*" httpPort="-1" httpsPort="9443" id="defaultHttpEndpoint">
     <accessLogging
         filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
         logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
@@ -50,28 +50,11 @@
   <jndiEntry jndiName="jwtKeyStorePassword" value="testOnlyKeystore"/>
   <jndiEntry jndiName="jwtKeyStoreAlias" value="default"/>
 
-  <jndiEntry jndiName="authCallbackURLSuccess" value="${env.SUCCESS_CALLBACK}"/>
-  <jndiEntry jndiName="authCallbackURLFailure" value="${env.FAIL_CALLBACK}"/>
-  <jndiEntry jndiName="playerUrl" value="${env.PLAYER_URL}"/>
+  <jndiEntry jndiName="authCallbackURLSuccess" value="${env.FRONT_END_SUCCESS_CALLBACK}"/>
+  <jndiEntry jndiName="authCallbackURLFailure" value="${env.FRONT_END_FAIL_CALLBACK}"/>
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
-  <!-- Twitter Application Info... -->
-  <jndiEntry jndiName="twitterOAuthConsumerKey" value="${env.TWITTER_CONSUMER_KEY}"/>
-  <jndiEntry jndiName="twitterOAuthConsumerSecret" value="${env.TWITTER_CONSUMER_SECRET}"/>
-
-  <!-- Facebook Application Info...  -->
-  <jndiEntry jndiName="facebookAppID" value="${env.FACEBOOK_APP_ID}"/>
-  <jndiEntry jndiName="facebookSecret" value="${env.FACEBOOK_APP_SECRET}"/>
-
-  <!-- Google Application Info...  -->
-  <jndiEntry jndiName="googleOAuthConsumerKey" value="${env.GOOGLE_APP_ID}"/>
-  <jndiEntry jndiName="googleOAuthConsumerSecret" value="${env.GOOGLE_APP_SECRET}"/>
-
-  <!-- Github Application Info...  -->
-  <jndiEntry jndiName="gitHubOAuthKey" value="${env.GITHUB_APP_ID}"/>
-  <jndiEntry jndiName="gitHubOAuthSecret" value="${env.GITHUB_APP_SECRET}"/>
-
-  <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_URL}"/>
+  <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_SERVICE_URL}"/>
 
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
@@ -86,14 +69,5 @@
   <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
     <classloader commonLibraryRef="couchdb-lib"></classloader>
   </webApplication>
-
-  <!-- Preserve the old API as a separate war. Do not inspect it for swagger -->
-  <webApplication contextRoot="/play" id="play-app" location="play-app.war" name="play-app">
-    <classloader commonLibraryRef="couchdb-lib"></classloader>
-  </webApplication>
-  <apiDiscovery>
-     <webModuleDoc contextRoot="/play" enabled="false" />
-  </apiDiscovery>
-
 
 </server>

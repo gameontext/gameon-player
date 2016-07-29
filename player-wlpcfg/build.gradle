@@ -26,24 +26,7 @@ if (null != System.getenv('DOCKER_CERT_PATH')){
     dockerCertPath = System.getenv('DOCKER_CERT_PATH')
 }
 
-def localEnvironment = ["LICENSE=accept",
-            "MAP_URL=" + System.getenv('MAP_URL'),
-            "MAP_KEY=" + System.getenv('MAP_KEY'),
-            "MAP_PLAYER_URL=" + System.getenv('MAP_PLAYER_URL'),
-            "COUCHDB_URL=" + System.getenv('COUCHDB_URL'),
-            "COUCHDB_USER=" + System.getenv('COUCHDB_USER'),
-            "COUCHDB_PASSWORD=" + System.getenv('COUCHDB_PASSWORD'),
-            "TWITTER_CONSUMER_KEY=" + System.getenv('TWITTER_CONSUMER_KEY'),
-            "TWITTER_CONSUMER_SECRET=" + System.getenv('TWITTER_CONSUMER_SECRET'),
-            "FACEBOOK_APP_ID=" + System.getenv('FACEBOOK_APP_ID'),
-            "FACEBOOK_APP_SECRET=" + System.getenv('FACEBOOK_APP_SECRET'),
-            "GOOGLE_APP_ID=" + System.getenv('GOOGLE_APP_ID'),
-            "GOOGLE_APP_SECRET=" + System.getenv('GOOGLE_APP_SECRET'),
-            "SUCCESS_CALLBACK=" + System.getenv('SUCCESS_CALLBACK'),
-            "FAIL_CALLBACK=" + System.getenv('FAIL_CALLBACK'),
-            "PLAYER_URL=" + System.getenv('PLAYER_URL'),
-            "SYSTEM_ID=" + System.getenv('SYSTEM_ID')
-        ]
+def localEnvironment = ["LICENSE=accept"]
 
 if (null != System.getenv("SSL_CERT"))
 {
