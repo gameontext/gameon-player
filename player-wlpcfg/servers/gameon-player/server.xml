@@ -55,6 +55,9 @@
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
   <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_SERVICE_URL}"/>
+  
+  <!--used by LogView for basic auth -->
+  <jndiEntry jndiName="mapApiKey" value="${env.MAP_KEY}"/>
 
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
