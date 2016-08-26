@@ -42,7 +42,6 @@
     </accessLogging>
   </httpEndpoint>
 
-  <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/play" maxAge="86400"/>
   <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/players" maxAge="86400"/>
 
   <!-- Signed JWT keystore info -->
