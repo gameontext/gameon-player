@@ -1,8 +1,5 @@
 <server description="Game On! Player Service">
 
-	<!-- Enable API discovery -->
-    <include location="${server.config.dir}/apiDiscovery.xml"/>
-
     <!-- Enable features -->
   <featureManager>
     <feature>websocket-1.1</feature>
@@ -54,10 +51,12 @@
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
   <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_SERVICE_URL}"/>
-  
+
   <!--used by LogView for basic auth -->
   <jndiEntry jndiName="mapApiKey" value="${env.MAP_KEY}"/>
 
+  <!-- turn off polling -->
+  <config updateTrigger="mbean" />
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
   <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameon.*=all:org.gameon.player.*=all:net.wasdev.gameon.*=all"/>
