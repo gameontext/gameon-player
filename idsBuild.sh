@@ -33,8 +33,8 @@ then
   curl -X 'POST' --silent --data-binary '{"text":"Build for the player service has failed."}' $SLACK_WEBHOOK_PATH > /dev/null
   exit -1
 else
-  cd map-wlpcfg
-  ../docker build -t gameon-map -f Dockerfile.live .
+  cd player-wlpcfg
+  ../docker build -t gameon-player -f Dockerfile.live .
   if [ $? != 0 ]
   then
     echo "Docker build failed, will NOT attempt to stop/rm/start-new-container."
@@ -42,10 +42,10 @@ else
     exit -2
   else
     echo Attempting to remove old containers.
-    ../docker stop -t 0 gameon-map || true
-    ../docker rm gameon-map || true
+    ../docker stop -t 0 gameon-player || true
+    ../docker rm gameon-player || true
     echo Starting new container.
-    ../docker run -d -p 9082:9080 -p 9443:9443 --link etcd -e LICENSE=accept -e ETCDCTL_ENDPOINT=http://etcd:4001 --name=gameon-map gameon-map
+    ../docker run -d -p 9082:9080 -p 9443:9443 --link etcd -e LICENSE=accept -e ETCDCTL_ENDPOINT=http://etcd:4001 --name=gameon-player gameon-player
     if [ $? != 0 ]
     then
       echo "Docker run failed.. it's too late.. the damage is done already."
