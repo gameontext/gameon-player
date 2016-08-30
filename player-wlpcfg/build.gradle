@@ -1,0 +1,29 @@
+apply plugin: 'eclipse'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+task copyWAR(type: Copy) {
+    from '../player-app/build/libs/player-app-1.0.war'
+    into 'servers/gameon-player/apps/'
+    rename("player-app-1.0.war", "player-app.war")
+}
+
+task copyLibs(type: Copy) {
+    from '../player-app/build/libs/'
+    into 'servers/gameon-player/lib/'
+    exclude 'player*'
+}
+
+task build(dependsOn: ['copyWAR', 'copyLibs']){
+}
+task clean {
+    delete "servers/gameon-player/apps"
+    delete "servers/gameon-player/lib"
+    delete "servers/gameon-player/logs"
+    delete "servers/gameon-player/workarea"
+}
+
