@@ -1,4 +1,4 @@
-FROM websphere-liberty:latest
+FROM websphere-liberty:beta
 
 MAINTAINER Erin Schnabel <schnabel@us.ibm.com> (@ebullientworks)
 
