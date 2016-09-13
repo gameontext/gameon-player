@@ -4,45 +4,12 @@ buildscript {
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:2.6'
-    }
 }
-
-def dockerHost = "https://localhost:2376"
-if (null != System.getenv("DOCKER_HOST"))
-{
-    dockerHost = System.getenv('DOCKER_HOST')
-
-    if (dockerHost.indexOf('tcp') == 0)
-    {
-        dockerHost = dockerHost.replace('tcp','https')
-    }
-}
-
-def dockerCertPath = ""
-if (null != System.getenv('DOCKER_CERT_PATH')){
-    dockerCertPath = System.getenv('DOCKER_CERT_PATH')
-}
-
-def localEnvironment = ["LICENSE=accept"]
-
-if (null != System.getenv("SSL_CERT"))
-{
-    localEnvironment << "SSL_CERT=" + System.getenv("SSL_CERT")
-}
-
-def etcdEnvironment = ["LICENSE=accept", "ETCDCTL_ENDPOINT=http://etcd:4001"]
 
 task copyWAR(type: Copy) {
     from '../player-app/build/libs/player-app-1.0.war'
     into 'servers/gameon-player/apps/'
     rename("player-app-1.0.war", "player-app.war")
-
-    from '../play-app/build/libs/play-app-1.0.war'
-    into 'servers/gameon-player/apps/'
-    rename("play-app-1.0.war", "play-app.war")
 }
 
 task copyLibs(type: Copy) {
@@ -53,55 +20,10 @@ task copyLibs(type: Copy) {
 
 task build(dependsOn: ['copyWAR', 'copyLibs']){
 }
-
-apply plugin: 'com.bmuschko.docker-remote-api'
-
-import com.bmuschko.gradle.docker.tasks.container.*
-import com.bmuschko.gradle.docker.tasks.image.*
-
-docker {
-      url = dockerHost
-    certPath = new File(dockerCertPath)
+task clean {
+    delete "servers/gameon-player/apps"
+    delete "servers/gameon-player/lib"
+    delete "servers/gameon-player/logs"
+    delete "servers/gameon-player/workarea"
 }
 
-task buildDockerImage(type: DockerBuildImage, dependsOn: ['copyWAR','copyLibs']) {
-    inputDir = file('.')
-    tag = 'gameon-player'
-    quiet = false
-    pull = true
-}
-
-task stopCurrentContainer(type: DockerStopContainer) {
-    targetContainerId { "gameon-player" }
-    timeout 0
-}
-
-task removeCurrentContainer(type: DockerRemoveContainer) {
-    targetContainerId { "gameon-player" }
-}
-
-task createNewContainer(type: DockerCreateContainer) {
-    targetImageId { "gameon-player" }
-    containerName = "gameon-player"
-    portBindings = ['9082:9080','9443:9443']
-    env = localEnvironment
-}
-
-task startNewContainer(type: DockerStartContainer) {
-    dependsOn createNewContainer
-    targetContainerId { "gameon-player" }
-}
-
-
-task createNewEtcdContainer(type: DockerCreateContainer) {
-    targetImageId { "gameon-player" }
-    containerName = "gameon-player"
-    portBindings = ['9082:9080','9443:9443']
-    env = etcdEnvironment
-    links = ['etcd:etcd']
-}
-
-task startNewEtcdContainer(type: DockerStartContainer) {
-    dependsOn createNewEtcdContainer
-    targetContainerId { "gameon-player" }
-}

@@ -1,4 +1,3 @@
-include 'play-app'
 include 'player-app'
 include 'player-wlpcfg'
 

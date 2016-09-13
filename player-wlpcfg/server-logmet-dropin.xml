@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<server description="new server">
+<server description="logmet integration">
 
     <featureManager>
-        <feature>logmetCollector-1.0</feature>
+        <feature>bluemixLogCollector-1.1</feature>
     </featureManager>
 
     <keyStore id="javaKeyStore" location="${java.home}/lib/security/cacerts" password="changeit" />
     <ssl id="mySSLConfig" trustStoreRef="javaKeyStore" keyStoreRef="defaultKeyStore" />
 
-    
+
     <logmetCollector hostName="${env.LOGMET_HOST}" port="${env.LOGMET_PORT}" tenant="${env.LOGMET_TENANT}" password="${env.LOGMET_PWD}" sslRef="mySSLConfig">
         <source>message</source>
         <source>trace</source>
