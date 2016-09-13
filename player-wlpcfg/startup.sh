@@ -131,5 +131,5 @@ else
     curl -X PUT -H "Content-Type: application/json" --data @/opt/player.json ${AUTH_HOST}/playerdb/_design/players
   fi
 
-  exec a8sidecar --supervise /opt/ibm/wlp/bin/server run $SERVERDIRNAME
+  exec a8sidecar --log --proxy --register --supervise /opt/ibm/wlp/bin/server run $SERVERDIRNAME
 fi
