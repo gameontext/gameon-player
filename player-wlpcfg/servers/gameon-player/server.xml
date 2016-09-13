@@ -59,12 +59,12 @@
   <config updateTrigger="mbean" />
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
-  <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameon.*=all:org.gameon.player.*=all:net.wasdev.gameon.*=all"/>
+  <logging consoleLogLevel="INFO" traceSpecification="*=info:org.gameontext.*=all"/>
 
   <!-- This is required to prevent the web apps from being lazily loaded -->
   <webContainer deferServletLoad="false"/>
   <!-- The JVM can get confused about available CPU in virtualized envs -->
-  <executor coreThreads="10"  />
+  <executor coreThreads="5"  />
 
   <!-- new API as a separate war -->
   <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
