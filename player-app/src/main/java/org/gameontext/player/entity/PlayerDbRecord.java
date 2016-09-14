@@ -103,6 +103,9 @@ public class PlayerDbRecord {
     @ApiModelProperty(hidden = true)
     private String location;
 
+    @ApiModelProperty(hidden = true)
+    private String email;
+
     @JsonIgnore
     public void update(PlayerArgument p) {
         this.id = p.id;
@@ -133,12 +136,21 @@ public class PlayerDbRecord {
         this.location = location;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
 
     @Override
     public String toString() {
         return "Player [id=" + id + ", revision=" + rev +", name=" + name
                 + ", favoriteColor=" + favoriteColor
-                + ", location=" + location + "]";
+                + ", location=" + location
+                + ", email=" + email +"]";
     }
 
     @JsonIgnore

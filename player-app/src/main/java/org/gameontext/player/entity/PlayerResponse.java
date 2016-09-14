@@ -52,18 +52,18 @@ public class PlayerResponse {
             example = "Harriet",
             required = true)
     protected String name;
-        
+
     @ApiModelProperty(
             value = "Favorite color",
             example = "Tangerine",
             required = true)
     protected String favoriteColor;
-    
+
     @ApiModelProperty(
             value = "Player Location",
             required = true)
     protected PlayerLocation location;
-    
+
     @ApiModelProperty(
             value = "Player Credentials",
             notes = "Credentials, only present if request is authorized",
@@ -72,7 +72,7 @@ public class PlayerResponse {
 
     @JsonCreator
     public PlayerResponse() {}
-    
+
     public PlayerResponse(PlayerDbRecord db) {
         update(db);
     }
@@ -106,23 +106,23 @@ public class PlayerResponse {
     public void setFavoriteColor(String favoriteColor) {
         this.favoriteColor = favoriteColor;
     }
-    
+
     public void setLocation(PlayerLocation location) {
         this.location = location;
     }
-    
+
     public PlayerLocation getLocation(){
         return location;
     }
-    
+
     public PlayerCredentials getCredentials(){
         return credentials;
     }
-    
+
     public void setCredentials(PlayerCredentials credentials){
         this.credentials = credentials;
     }
-    
+
     @JsonIgnore
     public void update(PlayerDbRecord db){
         this.id = db.id;
@@ -133,11 +133,12 @@ public class PlayerResponse {
         this.location.setLocation(db.getLocation());
         this.credentials = new PlayerCredentials();
         this.credentials.setSharedSecret(db.getApiKey());
+        this.credentials.setEmail(db.getEmail());
     }
 
     @Override
     public String toString() {
-        return "Player [id=" + id + ", revision=" + rev +", name=" + name 
+        return "Player [id=" + id + ", revision=" + rev +", name=" + name
                 + ", favoriteColor=" + favoriteColor + "]";
     }
 }

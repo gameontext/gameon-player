@@ -48,6 +48,9 @@ import mockit.Tested;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
+
 @RunWith(JMockit.class)
 public class AllPlayersResourceTest {
 
@@ -58,7 +61,7 @@ public class AllPlayersResourceTest {
 
     @Injectable(value = "testId")
     String systemId = "testId";
-    
+
     PlayerDbRecord playerDb = new PlayerDbRecord();
     PlayerArgument playerArg = new PlayerArgument();
     @Before
@@ -69,7 +72,7 @@ public class AllPlayersResourceTest {
         playerDb.setLocation("Home");
         playerDb.setRev("high");
         playerDb.setApiKey("FISH");
-        
+
         playerArg.setId("123");
         playerArg.setName("Chunky");
         playerArg.setFavoriteColor("Fuschia");
@@ -108,9 +111,11 @@ public class AllPlayersResourceTest {
 
     @Test(expected=UpdateConflictException.class)
     public void checkAlreadyKnownId() throws IOException{
-
+        Claims claims = Jwts.claims();
+        claims.put("email","example@test.test");
         new Expectations() {{
             request.getAttribute("player.id"); returns(playerArg.getId());
+            request.getAttribute("player.claims"); returns(claims);
             dbi.create(withAny(PlayerDbRecord.class)); result = new UpdateConflictException();
         }};
 
@@ -119,9 +124,11 @@ public class AllPlayersResourceTest {
 
     @Test
     public void checkCreateSystemId(@Mocked Response response) throws IOException{
-
+        Claims claims = Jwts.claims();
+        claims.put("email","example@test.test");
         new Expectations() {{
             request.getAttribute("player.id"); returns(systemId);
+            request.getAttribute("player.claims"); returns(claims);            
         }};
 
         tested.createPlayer(playerArg);
@@ -149,18 +156,18 @@ public class AllPlayersResourceTest {
         new Expectations() {{
             dbi.queryView((ViewQuery)any,PlayerDbRecord.class); returns(players);
         }};
-        
+
         tested.getAllPlayers();
 
         new Verifications() {{
-            GenericEntity<List<PlayerResponse>> entity;            
+            GenericEntity<List<PlayerResponse>> entity;
             ResponseBuilder b = Response.ok(); times = 1;
             b.entity(entity = withCapture());
-            
+
             List<PlayerResponse> resultList = (entity.getEntity());
             Assert.assertEquals("Players list is not the expected size", players.size(), resultList.size());
-            //TODO: verify 
+            //TODO: verify
         }};
-        
+
     }
 }
