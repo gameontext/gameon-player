@@ -64,7 +64,7 @@ public class PlayerAccountResource {
 
     @Inject
     protected CouchDbConnector db;
-    
+
     @Inject
     Kafka kafka;
 
@@ -73,8 +73,8 @@ public class PlayerAccountResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get a specific player", 
-        notes = "", 
+    @ApiOperation(value = "Get a specific player",
+        notes = "",
         response = PlayerResponse.class)
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
@@ -87,7 +87,29 @@ public class PlayerAccountResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
-        
+
+        //because we added collecting emails after release, existing accounts can be
+        //missing email info, but if a player gets this far, they have seen & agreed
+        //to the t&c's via the login, so we update their record with the email from the
+        //jwt.
+        //we know the UI does a get against the ID to test if the user exists or not yet,
+        //during the initial login, so by adding this logic here, we use that call to
+        //update the player record with the email.
+        //only do this for missing emails, where the jwt id matches the requested id.
+        //(eg, not for players with emails already set, and not for the system id)
+        if(p.getEmail()==null && authId!=null && authId.equals(id)) {
+          Claims claims = (Claims) httpRequest.getAttribute("player.claims");
+          //only do this bit for client based jwts.
+          if ( claims!=null && !claims.getAudience().equals("server")) {
+              //if the jwt has an email (older cached ones may not)
+              if(claims.get("email")!=null){
+                p.setEmail(claims.get("email").toString());
+                db.update(p);
+                kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
+              }
+          }
+        }
+
         PlayerResponse pr = new PlayerResponse(p);
 
         if (unauthorizedId(authId, id)) {
@@ -129,21 +151,21 @@ public class PlayerAccountResource {
         }
 
         PlayerDbRecord fullPlayer = db.get(PlayerDbRecord.class, newPlayer.getId());
-        
+
         Claims claims = (Claims) httpRequest.getAttribute("player.claims");
         if ( !claims.getAudience().equals("server")) {
             // Check the "audience" to determine which fields can be updated
-            // If it is not a server, but it is the matching player, 
+            // If it is not a server, but it is the matching player,
             // we allow the user profile to be updated.
             fullPlayer.update(newPlayer);
         }
-        
+
         db.update(fullPlayer);
-        
+
         kafka.publishPlayerEvent(PlayerEvent.UPDATE, fullPlayer);
-        
+
         PlayerResponse pr = new PlayerResponse(fullPlayer);
-        
+
         return Response.ok(pr).build();
     }
 
@@ -180,7 +202,7 @@ public class PlayerAccountResource {
         db.delete(p);
 
         kafka.publishPlayerEvent(PlayerEvent.DELETE, p);
-        
+
         return Response.status(HttpServletResponse.SC_NO_CONTENT).build();
     }
 
@@ -202,7 +224,7 @@ public class PlayerAccountResource {
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
 
         // we don't want to allow this method to be invoked by a user.
-        Claims claims = (Claims) httpRequest.getAttribute("player.claims");       
+        Claims claims = (Claims) httpRequest.getAttribute("player.claims");
         if ( !claims.getAudience().equals("server")) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
@@ -215,7 +237,7 @@ public class PlayerAccountResource {
         String oldLocation = update.getOldLocation();
         String newLocation = update.getNewLocation();
         PlayerLocation finalLocation = new PlayerLocation();
-        
+
         // try setting to the new location
         int rc;
 
@@ -230,15 +252,15 @@ public class PlayerAccountResource {
             rc = HttpServletResponse.SC_CONFLICT;
             finalLocation.setLocation(p.getLocation());
         }
-        
+
         return Response.status(rc).entity(finalLocation).build();
     }
-    
+
     @GET
     @Path("/location")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get a specific player location", 
-        notes = "returns a map of player id to location, location can be null if historically the player has never had a location stored.", 
+    @ApiOperation(value = "Get a specific player location",
+        notes = "returns a map of player id to location, location can be null if historically the player has never had a location stored.",
         code = HttpServletResponse.SC_OK ,
         response = PlayerLocation.class)
     @ApiResponses(value = {
@@ -248,18 +270,18 @@ public class PlayerAccountResource {
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
         PlayerDbRecord p;
-        
+
         p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
-        
+
         PlayerLocation location = new PlayerLocation();
         location.setLocation(p.getLocation());
         return location;
     }
-    
+
     @GET
     @Path("/credentials")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get credentials for a specific player", 
+    @ApiOperation(value = "Get credentials for a specific player",
         notes = "")
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
@@ -267,10 +289,10 @@ public class PlayerAccountResource {
     })
     public PlayerCredentials getPlayerCredentials(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
-        
+
         // set by the auth filter.
         String authId = (String) httpRequest.getAttribute("player.id");
-        
+
         if (unauthorizedId(authId, id)) {
             if(authId==null){
                 authId="Unauthenticated User";
@@ -280,14 +302,15 @@ public class PlayerAccountResource {
                     "Credentials for Player " + id + " could not be retrieved",
                     authId + " is not allowed to view requested information");
         }
-        
+
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id);  // throws DocumentNotFoundException
-        
+
         PlayerCredentials credentials = new PlayerCredentials();
         credentials.setSharedSecret(p.getApiKey());
+        credentials.setEmail(p.getEmail());
         return credentials;
     }
-    
+
 
     @PUT
     @Path("/credentials/sharedSecret")
@@ -313,7 +336,7 @@ public class PlayerAccountResource {
         if ( claims.getAudience().equals("server")) {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
-                    "Unable to update player location",
+                    "Unable to update player apikey",
                     "Invalid token type " + claims.getAudience());
         }
 
@@ -326,7 +349,7 @@ public class PlayerAccountResource {
                     "Player " + id + " could not be updated",
                     authId + " is not allowed to update player " + id);
         }
-        
+
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id);  // throws DocumentNotFoundException
 
         //if no existing apikey, or apikey exists, but has not been perma-banned..
@@ -337,8 +360,63 @@ public class PlayerAccountResource {
         }else{
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
-                    "Unable to update player location",
+                    "Unable to update player apikey",
                     "ApiKey use is banned for player id " + p.getId());
+        }
+    }
+
+    @PUT
+    @Path("/credentials/email")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Update player contact email",
+            notes = "",
+            code = HttpServletResponse.SC_OK ,
+            response = PlayerArgument.class )
+    @ApiResponses(value = {
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player contact email")
+    })
+    public Response updatePlayerEmail(@PathParam("id") String id) throws IOException {
+
+        // set by the auth filter.
+        String authId = (String) httpRequest.getAttribute("player.id");
+
+        // we don't want to allow this method to be invoked by the server (must be at user's request).
+        Claims claims = (Claims) httpRequest.getAttribute("player.claims");
+        if ( claims.getAudience().equals("server")) {
+            throw new PlayerAccountModificationException(
+                    Response.Status.FORBIDDEN,
+                    "Unable to update player email",
+                    "Invalid token type " + claims.getAudience());
+        }
+
+        if (unauthorizedId(authId, id)) {
+            if(authId==null){
+                authId="Unauthenticated User";
+            }
+            throw new PlayerAccountModificationException(
+                    Response.Status.FORBIDDEN,
+                    "Player " + id + " could not be updated",
+                    authId + " is not allowed to update player " + id);
+        }
+
+        PlayerDbRecord p = db.get(PlayerDbRecord.class, id);  // throws DocumentNotFoundException
+
+        //if no existing apikey, or apikey exists, but has not been perma-banned..
+        if( !ACCESS_DENIED.equals(p.getApiKey())){
+            if(claims.get("email")!=null){
+              p.setEmail(claims.get("email").toString());
+            }
+            kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
+            return Response.ok(p).build();
+        }else{
+            throw new PlayerAccountModificationException(
+                    Response.Status.FORBIDDEN,
+                    "Unable to update player email",
+                    "Updates are banned for player id " + p.getId());
         }
     }
 

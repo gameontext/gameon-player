@@ -58,7 +58,7 @@ public class PlayerResourceTest {
 
     @Injectable(value="testId")
     String systemId = "testId";
-    
+
     PlayerDbRecord playerDb = new PlayerDbRecord();
     PlayerArgument playerArg = new PlayerArgument();
     @Before
@@ -69,7 +69,7 @@ public class PlayerResourceTest {
         playerDb.setLocation("Home");
         playerDb.setRev("high");
         playerDb.setApiKey("FISH");
-        
+
         playerArg.setId("123");
         playerArg.setName("Chunky");
         playerArg.setFavoriteColor("Fuschia");
@@ -79,8 +79,11 @@ public class PlayerResourceTest {
     @Test
     public void checkGetMatchingId() throws IOException {
         String playerId = "fish";
-        
+        Claims claims = Jwts.claims();
+        claims.put("email","example@test.test");
+        claims.setAudience("client");
         new Expectations() {{
+            request.getAttribute("player.claims"); returns(claims);
             request.getAttribute("player.id"); returns(playerId);
             dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
         }};
@@ -271,7 +274,7 @@ public class PlayerResourceTest {
 
         Claims claims = Jwts.claims();
         claims.setAudience("client");
-        
+
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns("game-on.org");
@@ -401,7 +404,7 @@ public class PlayerResourceTest {
         proposed.setName("AnotherName");
         proposed.setFavoriteColor("AnotherColor");
         proposed.setId(playerId);
-        
+
         new Expectations() {{
             tested.systemId = "game-on.org";
             request.getAttribute("player.id"); returns(playerId);
@@ -437,7 +440,7 @@ public class PlayerResourceTest {
         dbEntry.setFavoriteColor("Tangerine");
         dbEntry.setId(playerId);
         dbEntry.setLocation("Earth");
-        
+
         LocationChange locChange = new LocationChange();
         locChange.setOldLocation("Earth");
         locChange.setNewLocation("Mars");

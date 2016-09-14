@@ -42,6 +42,8 @@ import org.gameontext.player.entity.PlayerArgument;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerResponse;
 
+import io.jsonwebtoken.Claims;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -124,6 +126,10 @@ public class AllPlayersResource {
 
         PlayerDbRecord pFull = new PlayerDbRecord();
         pFull.update(player);   // get all proposed updates
+        Claims claims = (Claims) httpRequest.getAttribute("player.claims");
+        if(claims!=null && claims.get("email")!=null){
+          pFull.setEmail(claims.get("email").toString());
+        }
         pFull.generateApiKey(); // make sure an API key is generated for the new user
 
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
