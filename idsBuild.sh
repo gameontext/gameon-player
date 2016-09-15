@@ -34,7 +34,7 @@ then
   exit -1
 else
   cd player-wlpcfg
-  ../docker build -t gameon-player -f Dockerfile.live .
+  ../docker build -t gameon-player -f Dockerfile .
   if [ $? != 0 ]
   then
     echo "Docker build failed, will NOT attempt to stop/rm/start-new-container."
