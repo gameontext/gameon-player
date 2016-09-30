@@ -13,3 +13,4 @@ dockerrc
 /build/
 /servers/.classCache
 /servers/gameon-player/configDropins/overrides
+/servers/gameon-player/defaultServer
