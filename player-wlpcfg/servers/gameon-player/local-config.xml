@@ -1,9 +1,6 @@
 <server description="Settings for local development (overlays), skip/remove for built containers">
 
-  <!-- Enable API discovery -->
-  <include location="${server.config.dir}/configDropins/apiDiscovery.xml"/>
-
-  <logging consoleLogLevel="INFO"/>
+  <logging consoleLogLevel="INFO" />
 
   <applicationMonitor updateTrigger="polled" pollingRate="30s"/>
   <config updateTrigger="polled" monitorInterval="30s" />
