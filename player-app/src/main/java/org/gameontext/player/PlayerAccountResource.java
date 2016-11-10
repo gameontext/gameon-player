@@ -240,8 +240,7 @@ public class PlayerAccountResource {
 
         // try setting to the new location
         int rc;
-
-        if (p.getLocation().equals(oldLocation)) {
+        if (p.getLocation()==null || p.getLocation().equals(oldLocation)) {
             p.setLocation(newLocation);
             db.update(p);
 

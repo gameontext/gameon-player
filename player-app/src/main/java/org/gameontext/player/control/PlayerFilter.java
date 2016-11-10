@@ -120,8 +120,11 @@ public class PlayerFilter implements Filter {
         JWT jwt = new JWT(signingCert, jwtHeader, jwtParam);
         
         if(jwt.getState().equals(AuthenticationState.ACCESS_DENIED)) {
-            //JWT is not valid, however we let GET requests with no parameters through
-            if(!("GET".equals(req.getMethod()) && (req.getQueryString()==null || req.getQueryString().isEmpty()))){
+            String ctxPath = req.getContextPath();
+            boolean protectedUrl = ctxPath.contains("account");
+            
+            //JWT is not valid, however we let GET requests with no parameters through to protected urls.
+            if(protectedUrl && !("GET".equals(req.getMethod()) && (req.getQueryString()==null || req.getQueryString().isEmpty()))){
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }

@@ -73,16 +73,21 @@ public class PlayerLocationsResource {
         
         if(playerId!=null){
             PlayerDbRecord p = db.get(PlayerDbRecord.class, playerId);
-            if(siteId==null || siteId.equals(p.getLocation())){
-                locations.put(p.getId(), p.getLocation());
+            if(siteId==null || siteId.equals(p.getLocation()) || 
+                (siteId.equals(PlayerApplication.FIRST_ROOM) && p.getLocation()==null)
+              ){
+                locations.put(p.getId(), p.getLocation()==null?PlayerApplication.FIRST_ROOM:p.getLocation());
             }
         }else{
-            ViewQuery q = new ViewQuery().allDocs().includeDocs(true);
-            List<PlayerDbRecord> results = db.queryView(q, PlayerDbRecord.class);
+            ViewQuery all = new ViewQuery().designDocId("_design/players").viewName("all").cacheOk(true).includeDocs(true);
+            List<PlayerDbRecord> results = db.queryView(all, PlayerDbRecord.class);
             results
                 .stream()
-                .filter( player -> siteId==null || siteId.equals(player.getLocation()))
-                .forEach( player -> locations.put(player.getId(), player.getLocation()));
+                .filter( player -> siteId==null || 
+                                   siteId.equals(player.getLocation()) || 
+                                  (siteId.equals(PlayerApplication.FIRST_ROOM) && player.getLocation()==null)
+                       )
+                .forEach( player -> locations.put(player.getId(), player.getLocation()==null?PlayerApplication.FIRST_ROOM:player.getLocation()));
         }
         
         return locations;

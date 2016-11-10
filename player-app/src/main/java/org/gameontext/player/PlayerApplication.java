@@ -25,5 +25,5 @@ import javax.ws.rs.core.Application;
                 version = "1.0"
                 ))
 public class PlayerApplication extends Application {
-
+    public static String FIRST_ROOM="firstroom";
 }

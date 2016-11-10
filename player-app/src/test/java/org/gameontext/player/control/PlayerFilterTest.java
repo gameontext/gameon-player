@@ -118,6 +118,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getParameterValues("jwt"); returns(new String[]{newJwt});
             request.getMethod(); returns("POST");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
@@ -144,6 +145,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getParameterValues("jwt"); returns(new String[]{});
             request.getMethod(); returns("POST");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
@@ -170,6 +172,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getParameterValues("jwt"); returns(new String[]{});
             request.getMethod(); returns("GET");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
@@ -246,6 +249,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{newJwt})));
             request.getMethod(); returns("POST");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
@@ -272,6 +276,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{})));
             request.getMethod(); returns("POST");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
@@ -298,6 +303,7 @@ public class PlayerFilterTest {
         new Expectations() {{
             request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{})));
             request.getMethod(); returns("GET");
+            request.getContextPath(); returns ("/accounts");
         }};
 
         //invoke the filter
