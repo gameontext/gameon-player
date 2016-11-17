@@ -1,5 +1,7 @@
 package org.gameontext.player.entity;
 
+import org.gameontext.player.PlayerApplication;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -17,6 +19,10 @@ public class PlayerLocation {
     }
 
     public void setLocation(String location) {
-        this.location = location;
+        if(location==null){
+            this.location = PlayerApplication.FIRST_ROOM;
+        }else{
+            this.location = location;
+        }
     }    
 }
