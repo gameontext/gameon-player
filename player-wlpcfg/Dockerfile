@@ -33,3 +33,8 @@ ADD ./servers/gameon-player /opt/ibm/wlp/usr/servers/defaultServer/
 COPY ./player.json /opt/player.json
 
 CMD ["/opt/startup.sh"]
+
+HEALTHCHECK \
+  --timeout=10s \
+  --start-period=40s \
+  CMD wget -q -O /dev/null --no-check-certificate https://localhost:9443/players/v1/health
