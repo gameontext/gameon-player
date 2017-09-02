@@ -5,11 +5,6 @@ if [ ! -z "$ETCD_SECRET" ]; then
   . /data/primordial/setup.etcd.sh /data/primordial $ETCD_SECRET
 fi
 
-# Configure amalgam8 for this container
-export A8_SERVICE=players:v1
-export A8_ENDPOINT_PORT=9443
-export A8_ENDPOINT_TYPE=https
-
 export CONTAINER_NAME=player
 
 SERVER_PATH=/opt/ibm/wlp/usr/servers/defaultServer
@@ -41,42 +36,31 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   cd ${SERVER_PATH}
 
   export MAP_KEY=$(etcdctl get /passwords/map-key)
+
   export COUCHDB_SERVICE_URL=$(etcdctl get /couchdb/url)
   export COUCHDB_USER=$(etcdctl get /couchdb/user)
   export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
+
   export LOGSTASH_ENDPOINT=$(etcdctl get /logstash/endpoint)
   export LOGMET_HOST=$(etcdctl get /logmet/host)
   export LOGMET_PORT=$(etcdctl get /logmet/port)
   export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
   export LOGMET_PWD=$(etcdctl get /logmet/pwd)
+
   export SYSTEM_ID=$(etcdctl get /global/system_id)
-  export KAFKA_SERVICE_URL=$(etcdctl get /kafka/url)
-  export MESSAGEHUB_USER=$(etcdctl get /kafka/user)
-  export MESSAGEHUB_PASSWORD=$(etcdctl get /passwords/kafka)
-  export A8_REGISTRY_URL=$(etcdctl get /amalgam8/registryUrl)
-  export A8_CONTROLLER_URL=$(etcdctl get /amalgam8/controllerUrl)
-  export A8_CONTROLLER_POLL=$(etcdctl get /amalgam8/controllerPoll)
-  JWT=$(etcdctl get /amalgam8/jwt)  
 
   GAMEON_MODE=$(etcdctl get /global/mode)
   export GAMEON_MODE=${GAMEON_MODE:-production}
   export TARGET_PLATFORM=$(etcdctl get /global/targetPlatform)
-  
+
+  export KAFKA_SERVICE_URL=$(etcdctl get /kafka/url)
+
   #to run with message hub, we need a jaas jar we can only obtain
   #from github, and have to use an extra config snippet to enable it.
+  export MESSAGEHUB_USER=$(etcdctl get /kafka/user)
+  export MESSAGEHUB_PASSWORD=$(etcdctl get /passwords/kafka)
   wget https://github.com/ibm-messaging/message-hub-samples/raw/master/java/message-hub-liberty-sample/lib-message-hub/messagehub.login-1.0.0.jar
 
-  if [ -z "$A8_REGISTRY_URL" ]; then 
-    #no a8, just run server.
-    exec /opt/ibm/wlp/bin/server run defaultServer
-  else
-    #a8, configure security, and run via sidecar.
-    if [ ! -z "$JWT" ]; then     
-      export A8_REGISTRY_TOKEN=$JWT
-      export A8_CONTROLLER_TOKEN=$JWT
-    fi  
-    exec a8sidecar --proxy --register /opt/ibm/wlp/bin/server run defaultServer
-  fi
 else
   # LOCAL DEVELOPMENT!
   # We do not want to ruin the cloudant admin party, but our code is written to expect
@@ -115,6 +99,6 @@ else
   if [ $? -eq 22 ]; then
     curl -X PUT -H "Content-Type: application/json" --data @/opt/player.json ${AUTH_HOST}/playerdb/_design/players
   fi
-
-  exec a8sidecar --proxy --register /opt/ibm/wlp/bin/server run defaultServer
 fi
+
+exec /opt/ibm/wlp/bin/server run defaultServer

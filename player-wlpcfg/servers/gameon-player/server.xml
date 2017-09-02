@@ -32,7 +32,7 @@
 
   <!-- To access this server from a remote client add a host attribute to
     the following element, e.g. host="*" -->
-  <httpEndpoint host="*" httpPort="-1" httpsPort="9443" id="defaultHttpEndpoint">
+  <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
     <accessLogging
         filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
         logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
@@ -46,8 +46,6 @@
   <jndiEntry jndiName="jwtKeyStorePassword" value="testOnlyKeystore"/>
   <jndiEntry jndiName="jwtKeyStoreAlias" value="default"/>
 
-  <jndiEntry jndiName="authCallbackURLSuccess" value="${env.FRONT_END_SUCCESS_CALLBACK}"/>
-  <jndiEntry jndiName="authCallbackURLFailure" value="${env.FRONT_END_FAIL_CALLBACK}"/>
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
 
   <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_SERVICE_URL}"/>
