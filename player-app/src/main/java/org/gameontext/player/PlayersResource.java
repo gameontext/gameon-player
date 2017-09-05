@@ -18,6 +18,8 @@ package org.gameontext.player;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.ektorp.CouchDbConnector;
@@ -28,6 +30,7 @@ import io.swagger.annotations.ApiOperation;
 @Path("/")
 @Api( value = "players")
 public class PlayersResource {
+
 
     @Inject
     protected CouchDbConnector db;
@@ -44,15 +47,21 @@ public class PlayersResource {
      */
     @GET
     @Path("health")
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Check application health",
         notes = "")
     public Response healthCheck() {
+        if ( db != null && db.getDbInfo() != null ) {
+            return Response.ok().entity("{\"status\":\"UP\"}").build();
+        }  else {
+            System.out.println("db = " + db);
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("{\"status\":\"DOWN\"}").build();
+        }
 //        if ( mapRepository != null && mapRepository.connectionReady() ) {
-//            return Response.ok().build();
+//            return Response.ok().entity("{\"status\":\"UP\"}").build();
 //        } else {
-//            return Response.serverError().build();
+//           return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("{\"status\":\"DOWN\"}").build();
 //        }
-        return Response.ok().build();
     }
 
     /**
@@ -63,11 +72,6 @@ public class PlayersResource {
     @ApiOperation(value = "Application information",
         notes = "")
     public Response info() {
-//        if ( mapRepository != null && mapRepository.connectionReady() ) {
-//            return Response.ok().build();
-//        } else {
-//            return Response.serverError().build();
-//        }
-        return Response.ok().build();
+        return Response.ok().entity("{\"build\":\"UP\"}").build();
     }
 }
