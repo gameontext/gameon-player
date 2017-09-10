@@ -41,7 +41,6 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export COUCHDB_USER=$(etcdctl get /couchdb/user)
   export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
 
-  export LOGSTASH_ENDPOINT=$(etcdctl get /logstash/endpoint)
   export LOGMET_HOST=$(etcdctl get /logmet/host)
   export LOGMET_PORT=$(etcdctl get /logmet/port)
   export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
