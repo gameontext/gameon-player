@@ -4,6 +4,14 @@
 
 See the [application architecture description](https://gameontext.gitbooks.io/gameon-gitbook/content/microservices/) in the Game On! Docs for more information on how to use this service.
 
+## Building
+
+To build this project: 
+
+    ./gradlew build
+    docker build -t gameontext/gameon-player player-wlpcfg
+
+
 ## Contributing
 
 Want to help! Pile On! 
