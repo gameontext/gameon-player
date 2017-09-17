@@ -41,6 +41,7 @@ import org.gameontext.player.control.PlayerAccountModificationException;
 import org.gameontext.player.entity.PlayerArgument;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerResponse;
+import org.gameontext.player.utils.SharedSecretGenerator;
 
 import io.jsonwebtoken.Claims;
 
@@ -130,8 +131,10 @@ public class AllPlayersResource {
         if(claims!=null && claims.get("email")!=null){
           pFull.setEmail(claims.get("email").toString());
         }
-        pFull.generateApiKey(); // make sure an API key is generated for the new user
-
+        
+        // make sure an API key is generated for the new user
+        pFull.setApiKey(SharedSecretGenerator.generateApiKey());
+        
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
 

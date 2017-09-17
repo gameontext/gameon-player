@@ -41,6 +41,7 @@ import org.gameontext.player.entity.PlayerCredentials;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerLocation;
 import org.gameontext.player.entity.PlayerResponse;
+import org.gameontext.player.utils.SharedSecretGenerator;
 
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
@@ -88,15 +89,15 @@ public class PlayerAccountResource {
 
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
 
-        //because we added collecting emails after release, existing accounts can be
-        //missing email info, but if a player gets this far, they have seen & agreed
-        //to the t&c's via the login, so we update their record with the email from the
-        //jwt.
-        //we know the UI does a get against the ID to test if the user exists or not yet,
-        //during the initial login, so by adding this logic here, we use that call to
-        //update the player record with the email.
-        //only do this for missing emails, where the jwt id matches the requested id.
-        //(eg, not for players with emails already set, and not for the system id)
+        // because we added collecting emails after release, existing accounts can be
+        // missing email info, but if a player gets this far, they have seen & agreed
+        // to the t&c's via the login, so we update their record with the email from the
+        // jwt.
+        // we know the UI does a get against the ID to test if the user exists or not yet,
+        // during the initial login, so by adding this logic here, we use that call to
+        // update the player record with the email.
+        // Only do this for missing emails, where the jwt id matches the requested id.
+        // (eg, not for players with emails already set, and not for the system id)
         if(p.getEmail()==null && authId!=null && authId.equals(id)) {
           Claims claims = (Claims) httpRequest.getAttribute("player.claims");
           //only do this bit for client based jwts.
@@ -147,7 +148,7 @@ public class PlayerAccountResource {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
                     "Player " + id + " could not be updated",
-                    authId + " is not allowed to update room " + id);
+                    authId + " is not allowed to update player " + id);
         }
 
         PlayerDbRecord fullPlayer = db.get(PlayerDbRecord.class, newPlayer.getId());
@@ -353,7 +354,8 @@ public class PlayerAccountResource {
 
         //if no existing apikey, or apikey exists, but has not been perma-banned..
         if( !ACCESS_DENIED.equals(p.getApiKey())){
-            p.generateApiKey();
+            p.setApiKey(SharedSecretGenerator.generateApiKey());
+            db.update(p);
             kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, p);
             return Response.ok(p).build();
         }else{
@@ -408,6 +410,7 @@ public class PlayerAccountResource {
         if( !ACCESS_DENIED.equals(p.getApiKey())){
             if(claims.get("email")!=null){
               p.setEmail(claims.get("email").toString());
+              db.update(p);
             }
             kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
             return Response.ok(p).build();
