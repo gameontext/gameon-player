@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
+import org.gameontext.player.entity.ErrorResponse;
 import org.gameontext.player.entity.PlayerDbRecord;
 
 import io.swagger.annotations.Api;
@@ -62,8 +63,9 @@ public class PlayerLocationsResource {
                +" map if the player is not in that location", 
         responseContainer = "Map")
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL,
+                    responseContainer = "Map"),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
     public Map<String,String> getPlayerLocationInformation(
             @ApiParam(value = "target player id", required = false) @QueryParam("playerId") String playerId,

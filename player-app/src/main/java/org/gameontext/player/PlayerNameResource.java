@@ -62,7 +62,8 @@ public class PlayerNameResource {
         responseContainer = "List",
         response = String.class)
         @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, 
+                    responseContainer = "List", response = String.class),
     })
     public List<String> getNames() {
         Set<String> tenNames = new HashSet<String>();

@@ -35,12 +35,14 @@ import javax.ws.rs.core.Response;
 import org.ektorp.CouchDbConnector;
 import org.gameontext.player.Kafka.PlayerEvent;
 import org.gameontext.player.control.PlayerAccountModificationException;
+import org.gameontext.player.entity.ErrorResponse;
 import org.gameontext.player.entity.LocationChange;
 import org.gameontext.player.entity.PlayerArgument;
 import org.gameontext.player.entity.PlayerCredentials;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerLocation;
 import org.gameontext.player.entity.PlayerResponse;
+import org.gameontext.player.utils.SharedSecretGenerator;
 
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
@@ -77,8 +79,8 @@ public class PlayerAccountResource {
         notes = "",
         response = PlayerResponse.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
     public PlayerResponse getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -88,15 +90,15 @@ public class PlayerAccountResource {
 
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
 
-        //because we added collecting emails after release, existing accounts can be
-        //missing email info, but if a player gets this far, they have seen & agreed
-        //to the t&c's via the login, so we update their record with the email from the
-        //jwt.
-        //we know the UI does a get against the ID to test if the user exists or not yet,
-        //during the initial login, so by adding this logic here, we use that call to
-        //update the player record with the email.
-        //only do this for missing emails, where the jwt id matches the requested id.
-        //(eg, not for players with emails already set, and not for the system id)
+        // because we added collecting emails after release, existing accounts can be
+        // missing email info, but if a player gets this far, they have seen & agreed
+        // to the t&c's via the login, so we update their record with the email from the
+        // jwt.
+        // we know the UI does a get against the ID to test if the user exists or not yet,
+        // during the initial login, so by adding this logic here, we use that call to
+        // update the player record with the email.
+        // Only do this for missing emails, where the jwt id matches the requested id.
+        // (eg, not for players with emails already set, and not for the system id)
         if(p.getEmail()==null && authId!=null && authId.equals(id)) {
           Claims claims = (Claims) httpRequest.getAttribute("player.claims");
           //only do this bit for client based jwts.
@@ -127,10 +129,10 @@ public class PlayerAccountResource {
             notes = "",
             response = PlayerResponse.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update specified player")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update specified player", response=ErrorResponse.class)
     })
     public Response updatePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id,
@@ -147,7 +149,7 @@ public class PlayerAccountResource {
             throw new PlayerAccountModificationException(
                     Response.Status.FORBIDDEN,
                     "Player " + id + " could not be updated",
-                    authId + " is not allowed to update room " + id);
+                    authId + " is not allowed to update player " + id);
         }
 
         PlayerDbRecord fullPlayer = db.get(PlayerDbRecord.class, newPlayer.getId());
@@ -176,9 +178,9 @@ public class PlayerAccountResource {
             code = HttpServletResponse.SC_NO_CONTENT )
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_NO_CONTENT, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "delete specified player")
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "delete specified player", response=ErrorResponse.class)
     })
     public Response removePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -216,10 +218,10 @@ public class PlayerAccountResource {
             code = HttpServletResponse.SC_OK ,
             response = PlayerLocation.class )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update player location")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerLocation.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update player location", response=ErrorResponse.class)
     })
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
 
@@ -263,8 +265,8 @@ public class PlayerAccountResource {
         code = HttpServletResponse.SC_OK ,
         response = PlayerLocation.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerLocation.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -283,8 +285,8 @@ public class PlayerAccountResource {
     @ApiOperation(value = "Get credentials for a specific player",
         notes = "")
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerCredentials.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
     public PlayerCredentials getPlayerCredentials(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -320,10 +322,10 @@ public class PlayerAccountResource {
             code = HttpServletResponse.SC_OK ,
             response = PlayerArgument.class )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player shared secret")
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerArgument.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player shared secret", response=ErrorResponse.class)
     })
     public Response updatePlayerApiKey(@PathParam("id") String id) throws IOException {
 
@@ -353,7 +355,8 @@ public class PlayerAccountResource {
 
         //if no existing apikey, or apikey exists, but has not been perma-banned..
         if( !ACCESS_DENIED.equals(p.getApiKey())){
-            p.generateApiKey();
+            p.setApiKey(SharedSecretGenerator.generateApiKey());
+            db.update(p);
             kafka.publishPlayerEvent(PlayerEvent.UPDATE_APIKEY, p);
             return Response.ok(p).build();
         }else{
@@ -374,9 +377,9 @@ public class PlayerAccountResource {
             response = PlayerArgument.class )
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player contact email")
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player contact email", response=ErrorResponse.class)
     })
     public Response updatePlayerEmail(@PathParam("id") String id) throws IOException {
 
@@ -408,6 +411,7 @@ public class PlayerAccountResource {
         if( !ACCESS_DENIED.equals(p.getApiKey())){
             if(claims.get("email")!=null){
               p.setEmail(claims.get("email").toString());
+              db.update(p);
             }
             kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
             return Response.ok(p).build();

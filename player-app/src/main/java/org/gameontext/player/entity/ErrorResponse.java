@@ -15,38 +15,53 @@
  *******************************************************************************/
 package org.gameontext.player.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(description = "Player credentials")
+@ApiModel(description = "Error response")
 @JsonInclude(Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class PlayerCredentials {
+public class ErrorResponse {
 
-    @ApiModelProperty(value = "shared secret for player", example = "fjhre8h49hf438u9h45", required = true)
-    protected String sharedSecret;
+    @ApiModelProperty(
+            value = "Http Response code (for reference)",
+            example = "400",
+            required = true)
+    private int status;
 
-    @ApiModelProperty(value = "contact email for player", example = "myroomisbroken@gmail.com", required = false)
-    protected String email;
+    @ApiModelProperty(
+            value = "Error message",
+            example = "Unauthenticated client",
+            required = true)
+    private String message;
 
-    public String getSharedSecret() {
-        return sharedSecret;
+    @ApiModelProperty(
+            value = "Optional additional information",
+            example = "Room owner could not be determined.",
+            required = false)
+    private String more_info;
+
+    public int getStatus() {
+        return status;
+    }
+    public void setStatus(int status) {
+        this.status = status;
     }
 
-    public void setSharedSecret(String sharedSecret) {
-        this.sharedSecret = sharedSecret;
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String getEmail() {
-        return email;
+    public String getMore_info() {
+        return more_info;
     }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setMore_info(String more_info) {
+        this.more_info = more_info;
     }
 
 

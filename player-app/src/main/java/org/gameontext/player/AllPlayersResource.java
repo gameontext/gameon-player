@@ -38,9 +38,11 @@ import javax.ws.rs.core.Response;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.ViewQuery;
 import org.gameontext.player.control.PlayerAccountModificationException;
+import org.gameontext.player.entity.ErrorResponse;
 import org.gameontext.player.entity.PlayerArgument;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerResponse;
+import org.gameontext.player.utils.SharedSecretGenerator;
 
 import io.jsonwebtoken.Claims;
 
@@ -75,8 +77,8 @@ public class AllPlayersResource {
         response = PlayerResponse.class,
         responseContainer = "List")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = Messages.SUCCESSFUL),
-        @ApiResponse(code = 204, message = Messages.CONFLICT)
+        @ApiResponse(code = 200, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
+        @ApiResponse(code = 204, message = Messages.CONFLICT, response=ErrorResponse.class)
     })
     public Response getAllPlayers() throws IOException {
         ViewQuery all = new ViewQuery().designDocId("_design/players").viewName("all").cacheOk(true).includeDocs(true);
@@ -107,9 +109,9 @@ public class AllPlayersResource {
         response = PlayerResponse.class,
         code = HttpURLConnection.HTTP_CREATED )
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_CREATED, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Authenticated user id must match new player id"),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT)
+            @ApiResponse(code = HttpServletResponse.SC_CREATED, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Authenticated user id must match new player id", response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class)
         })
     public Response createPlayer(PlayerArgument player) throws IOException {
 
@@ -130,8 +132,10 @@ public class AllPlayersResource {
         if(claims!=null && claims.get("email")!=null){
           pFull.setEmail(claims.get("email").toString());
         }
-        pFull.generateApiKey(); // make sure an API key is generated for the new user
-
+        
+        // make sure an API key is generated for the new user
+        pFull.setApiKey(SharedSecretGenerator.generateApiKey());
+        
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
 
