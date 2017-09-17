@@ -70,7 +70,7 @@ public class Kafka {
              Properties producerProps = new Properties();
              producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUrl);
              producerProps.put(ProducerConfig.ACKS_CONFIG,"-1");
-             producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-map");
+             producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-player");
              producerProps.put(ProducerConfig.RETRIES_CONFIG,0);
              producerProps.put(ProducerConfig.BATCH_SIZE_CONFIG,16384);
              producerProps.put(ProducerConfig.LINGER_MS_CONFIG,1);
