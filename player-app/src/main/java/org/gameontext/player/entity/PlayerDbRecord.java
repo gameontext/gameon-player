@@ -15,11 +15,6 @@
  *******************************************************************************/
 package org.gameontext.player.entity;
 
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -151,17 +146,5 @@ public class PlayerDbRecord {
                 + ", favoriteColor=" + favoriteColor
                 + ", location=" + location
                 + ", email=" + email +"]";
-    }
-
-    @JsonIgnore
-    public void generateApiKey(){
-        Encoder e = Base64.getEncoder();
-        ByteBuffer bb = ByteBuffer.wrap(new byte[16*2]);
-        for(int i=0;i<2; i++){
-            UUID u = UUID.randomUUID();
-            bb.putLong(u.getMostSignificantBits());
-            bb.putLong(u.getLeastSignificantBits());
-        }
-        setApiKey(e.encodeToString(bb.array()));
     }
 }

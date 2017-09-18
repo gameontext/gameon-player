@@ -8,12 +8,12 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "Player location")
 public class PlayerLocation {
 
+    protected String location;
+        
     @ApiModelProperty(
             value = "current player location",
             example = "room_id_1",
             required = true)
-    protected String location;
-        
     public String getLocation() {
         return location;
     }

@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.UpdateConflictException;
 import org.ektorp.ViewQuery;
-import org.gameontext.player.AllPlayersResource;
-import org.gameontext.player.Kafka;
 import org.gameontext.player.control.PlayerAccountModificationException;
 import org.gameontext.player.entity.PlayerArgument;
 import org.gameontext.player.entity.PlayerDbRecord;
@@ -41,15 +39,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
 import mockit.Tested;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
-
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.Claims;
 
 @RunWith(JMockit.class)
 public class AllPlayersResourceTest {
