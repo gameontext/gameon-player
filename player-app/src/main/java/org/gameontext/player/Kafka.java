@@ -23,10 +23,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaException;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.utils.Log;
@@ -42,7 +44,10 @@ public class Kafka {
    protected String kafkaUrl;
 
    private Producer<String,String> producer=null;
+   protected final ObjectMapper mapper = new ObjectMapper();
+   public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,UPDATE_EMAIL,CREATE,DELETE}; 
 
+   
    public Kafka(){
    }
 
@@ -110,18 +115,23 @@ public class Kafka {
    }
 
    public void publishMessage(String topic, String key, String message){
-     if(producer!=null){
-         Log.log(Level.FINER, this, "Publishing Event {0} {1} {2}",topic,key,message);
-         ProducerRecord<String,String> pr = new ProducerRecord<String,String>(topic, key, message);
-         producer.send(pr);
-         Log.log(Level.FINER, this, "Published Event");
-     }else{
-         Log.log(Level.FINER, this, "Kafka Unavailable, ignoring event {0} {1} {2}",topic,key,message);
-     }
+       final Callback callback = (RecordMetadata m, Exception e) -> {
+           if ( e == null ) {
+               Log.log(Level.FINER, this, "Published Event");
+           } else {
+               Log.log(Level.FINER, this, "Error publishing event", e);
+           }
+       };
+
+       if(producer!=null){
+           Log.log(Level.FINER, this, "Publishing Event {0} {1} {2}",topic,key,message);
+           ProducerRecord<String,String> pr = new ProducerRecord<String,String>(topic, key, message);
+           producer.send(pr, callback);
+       } else{
+           Log.log(Level.FINER, this, "Kafka Unavailable, ignoring event {0} {1} {2}",topic,key,message);
+       }
    }
 
-   protected final ObjectMapper mapper = new ObjectMapper();
-   public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,UPDATE_EMAIL,CREATE,DELETE}; 
    public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player){
        try{
            //note that messagehub topics are charged, so we must only
