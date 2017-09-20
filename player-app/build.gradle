@@ -11,7 +11,6 @@ configurations {
 }
 
 dependencies {
-    providedCompile group:'javax.websocket', name:'javax.websocket-api', version:'1.1'
     providedCompile group:'javax.ws.rs', name:'javax.ws.rs-api', version:'2.0'
     providedCompile group:'javax.json', name:'javax.json-api', version:'1.0'
     providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
