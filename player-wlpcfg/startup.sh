@@ -25,15 +25,8 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   done
   echo "etcdctl returned sucessfully, continuing"
 
-  mkdir -p ${SERVER_PATH}/resources/security
-  cd ${SERVER_PATH}/resources/
-  etcdctl get /proxy/third-party-ssl-cert > cert.pem
-  openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in cert.pem
-  keytool -import -v -trustcacerts -alias default -file cert.pem -storepass truststore -keypass keystore -noprompt -keystore security/truststore.jks
-  keytool -genkey -storepass testOnlyKeystore -keypass wefwef -keyalg RSA -alias endeca -keystore security/key.jks -dname CN=rsssl,OU=unknown,O=unknown,L=unknown,ST=unknown,C=CA
-  keytool -delete -storepass testOnlyKeystore -alias endeca -keystore security/key.jks
-  keytool -v -importkeystore -srcalias 1 -alias 1 -destalias default -noprompt -srcstorepass keystore -deststorepass testOnlyKeystore -srckeypass keystore -destkeypass testOnlyKeystore -srckeystore cert.pkcs12 -srcstoretype PKCS12 -destkeystore security/key.jks -deststoretype JKS
-  cd ${SERVER_PATH}
+  mkdir -p /etc/cert
+  etcdctl get /proxy/third-party-ssl-cert > /etc/cert/cert.pem
 
   export MAP_KEY=$(etcdctl get /passwords/map-key)
 
@@ -45,7 +38,6 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export LOGMET_PORT=$(etcdctl get /logmet/port)
   export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
   export LOGMET_PWD=$(etcdctl get /logmet/pwd)
-
   export SYSTEM_ID=$(etcdctl get /global/system_id)
 
   GAMEON_MODE=$(etcdctl get /global/mode)
@@ -58,13 +50,35 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   #from github, and have to use an extra config snippet to enable it.
   export MESSAGEHUB_USER=$(etcdctl get /kafka/user)
   export MESSAGEHUB_PASSWORD=$(etcdctl get /passwords/kafka)
+  cd ${SERVER_PATH}
   wget https://github.com/ibm-messaging/message-hub-samples/raw/master/java/message-hub-liberty-sample/lib-message-hub/messagehub.login-1.0.0.jar
+fi
 
-else
+if [ -f /etc/cert/cert.pem ]; then
+  echo "Building keystore/truststore from cert.pem"
+  echo "-creating dir"
+  mkdir -p ${SERVER_PATH}/resources/security
+  echo "-cd dir"
+  cd ${SERVER_PATH}/resources/
+  echo "-converting pem to pkcs12"
+  openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in /etc/cert/cert.pem
+  echo "-importing pem to truststore.jks"
+  keytool -import -v -trustcacerts -alias default -file /etc/cert/cert.pem -storepass truststore -keypass keystore -noprompt -keystore security/truststore.jks
+  echo "-creating dummy key.jks"
+  keytool -genkey -storepass testOnlyKeystore -keypass wefwef -keyalg RSA -alias endeca -keystore security/key.jks -dname CN=rsssl,OU=unknown,O=unknown,L=unknown,ST=unknown,C=CA
+  echo "-emptying key.jks"
+  keytool -delete -storepass testOnlyKeystore -alias endeca -keystore security/key.jks
+  echo "-importing pkcs12 to key.jks"
+  keytool -v -importkeystore -srcalias 1 -alias 1 -destalias default -noprompt -srcstorepass keystore -deststorepass testOnlyKeystore -srckeypass keystore -destkeypass testOnlyKeystore -srckeystore cert.pkcs12 -srcstoretype PKCS12 -destkeystore security/key.jks -deststoretype JKS
+  echo "done"
+  cd ${SERVER_PATH}
+fi
+
+if [ "$GAMEON_MODE" == "development" ]; then
   # LOCAL DEVELOPMENT!
   # We do not want to ruin the cloudant admin party, but our code is written to expect
   # that creds are required, so we should make sure the required user/password exist
-  export AUTH_HOST="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@couchdb:5984"
+  export AUTH_HOST="http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@${COUCHDB_HOST_AND_PORT}"
 
   echo "** Testing connection to ${AUTH_HOST}"
   curl --fail ${AUTH_HOST}/_config/admins/${COUCHDB_USER}
