@@ -3,14 +3,12 @@
     <!-- Enable features -->
   <featureManager>
     <feature>websocket-1.1</feature>
-    <feature>localConnector-1.0</feature>
     <feature>jaxrs-2.0</feature>
     <feature>cdi-1.2</feature>
     <feature>ssl-1.0</feature>
     <feature>jsonp-1.0</feature>
     <feature>jndi-1.0</feature>
     <feature>concurrent-1.0</feature>
-    <feature>couchdb-1.0</feature>
   </featureManager>
 
   <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
@@ -19,27 +17,14 @@
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
 
-  <couchdb id="couchdb" jndiName="couchdb/connector" libraryRef="couchdb-lib" password="${env.COUCHDB_PASSWORD}" url="${env.COUCHDB_SERVICE_URL}" username="${env.COUCHDB_USER}"/>
-
-  <library id="couchdb-lib" >
-    <fileset dir='${server.config.dir}/lib' />
-  </library>
-
   <!-- if running locally, set this value to 127.0.0.1 or ${env.DOCKER_MACHINE_NAME}
        to enable apidiscover explorer 'try it out' functionality.
     <variable name="defaultHostName" value="127.0.0.1" />
   -->
 
   <!-- To access this server from a remote client add a host attribute to
-    the following element, e.g. host="*" -->
-  <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
-    <accessLogging
-        filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
-        logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
-    </accessLogging>
-  </httpEndpoint>
-
-  <cors allowedMethods="GET, POST, PUT, DELETE" allowedOrigins="*" domain="/players" maxAge="86400"/>
+       the following element, e.g. host="*" -->
+  <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint" />
 
   <!-- Signed JWT keystore info -->
   <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.jks"/>
@@ -47,11 +32,15 @@
   <jndiEntry jndiName="jwtKeyStoreAlias" value="default"/>
 
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>
-
   <jndiEntry jndiName="kafkaUrl" value="${env.KAFKA_SERVICE_URL}"/>
 
   <!--used by LogView for basic auth -->
   <jndiEntry jndiName="mapApiKey" value="${env.MAP_KEY}"/>
+
+  <!-- CouchDB -->
+  <jndiEntry jndiName="couchdb/username" value="${env.COUCHDB_USER}"/>
+  <jndiEntry jndiName="couchdb/password" value="${env.COUCHDB_PASSWORD}"/>
+  <jndiEntry jndiName="couchdb/url" value="${env.COUCHDB_SERVICE_URL}"/>
 
   <!-- turn off polling -->
   <config updateTrigger="mbean" />
@@ -65,15 +54,11 @@
   <executor coreThreads="5"  />
 
   <!-- new API as a separate war -->
-  <webApplication contextRoot="/players" id="player-app" location="player-app.war" name="player-app">
-    <classloader commonLibraryRef="couchdb-lib"></classloader>
-  </webApplication>
-
+  <webApplication contextRoot="/players" id="player-app" location="player-app.war"/>
+  
   <jndiEntry jndiName="developmentMode" value="${env.GAMEON_MODE}"/>
   <jndiEntry jndiName="targetPlatform" value="${env.TARGET_PLATFORM}"/>
   <include location="${env.TARGET_PLATFORM}-config.xml" optional="true" />
-  <include location="${env.TARGET_PLATFORM}-apiDiscovery.xml" optional="true" />
-  <include location="${env.TARGET_PLATFORM}-logCollector.xml" optional="true" />
   <include location="${env.TARGET_PLATFORM}-messageHub.xml" optional="true" />
 
 </server>
