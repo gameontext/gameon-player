@@ -7,7 +7,7 @@ fi
 
 export CONTAINER_NAME=player
 
-SERVER_PATH=/opt/ibm/wlp/usr/servers/defaultServer
+SERVER_PATH=/opt/ol/wlp/usr/servers/defaultServer
 
 if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   echo Setting up etcd...
@@ -114,4 +114,4 @@ if [ "$GAMEON_MODE" == "development" ]; then
   fi
 fi
 
-exec /opt/ibm/wlp/bin/server run defaultServer
+exec /opt/ol/wlp/bin/server run defaultServer
