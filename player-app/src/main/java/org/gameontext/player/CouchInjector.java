@@ -23,6 +23,7 @@ import javax.enterprise.inject.Produces;
 
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
+import org.ektorp.DbAccessException;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
@@ -49,18 +50,17 @@ public class CouchInjector {
                     .username(username)
                     .password(password)
                     .build();
-            
+
             CouchDbInstance dbi = new StdCouchDbInstance(authenticatedHttpClient);
 
             // Connect to the database with the specified
             CouchDbConnector dbc = dbi.createConnector(DB_NAME, false);
             Log.log(Level.FINER, this, "Connected to {0}", DB_NAME);
             return dbc;
-        } catch (MalformedURLException e) {
-            // Log the warning, and then re-throw to prevent this class from going into service,
+        } catch (DbAccessException | MalformedURLException e) {
+            // throw to prevent this class from going into service,
             // which will prevent injection to the Health check, which will make the app stay down.
-            Log.log(Level.WARNING, this, "Unable to connect to database", e);
-            throw new javax.enterprise.inject.CreationException("Unable to connect to database", e);
+            throw new javax.enterprise.inject.CreationException("Unable to connect to database " + DB_NAME, e);
         }
     }
 }
