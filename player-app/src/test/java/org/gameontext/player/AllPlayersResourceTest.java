@@ -80,7 +80,7 @@ public class AllPlayersResourceTest {
     public void checkCreateMissingId() throws IOException{
 
         new Expectations() {{
-            request.getAttribute("player.id"); returns(null);
+            request.getAttribute("player.id"); result = null;
         }};
 
         try {
@@ -95,7 +95,7 @@ public class AllPlayersResourceTest {
     public void checkMismatchedId() throws IOException{
 
         new Expectations() {{
-            request.getAttribute("player.id"); returns(playerArg.getId()+"FISH");
+            request.getAttribute("player.id"); result = playerArg.getId()+"FISH";
         }};
 
         try {
@@ -111,8 +111,8 @@ public class AllPlayersResourceTest {
         Claims claims = Jwts.claims();
         claims.put("email","example@test.test");
         new Expectations() {{
-            request.getAttribute("player.id"); returns(playerArg.getId());
-            request.getAttribute("player.claims"); returns(claims);
+            request.getAttribute("player.id"); result = playerArg.getId();
+            request.getAttribute("player.claims"); result = claims;
             dbi.create(withAny(PlayerDbRecord.class)); result = new UpdateConflictException();
         }};
 
@@ -124,8 +124,8 @@ public class AllPlayersResourceTest {
         Claims claims = Jwts.claims();
         claims.put("email","example@test.test");
         new Expectations() {{
-            request.getAttribute("player.id"); returns(systemId);
-            request.getAttribute("player.claims"); returns(claims);            
+            request.getAttribute("player.id"); result = systemId;
+            request.getAttribute("player.claims"); result = claims;            
         }};
 
         tested.createPlayer(playerArg);
@@ -151,7 +151,7 @@ public class AllPlayersResourceTest {
         players.add(another);
 
         new Expectations() {{
-            dbi.queryView((ViewQuery)any,PlayerDbRecord.class); returns(players);
+            dbi.queryView((ViewQuery)any,PlayerDbRecord.class); result = players;
         }};
 
         tested.getAllPlayers();

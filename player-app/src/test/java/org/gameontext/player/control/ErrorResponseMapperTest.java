@@ -202,7 +202,7 @@ public class ErrorResponseMapperTest {
             Assert.assertTrue("Stringified json should include status 400: [" + json + "]", 
                     json.contains("\"status\":400"));
             Assert.assertTrue("Stringified json should include message containing exception's message: [" + json + "]", 
-                    json.contains("\"message\":\"TestException\\n at [Source: N/A; line: -1, column: -1]\""));
+                    json.contains("\"message\":\"TestException\\n at [Source: "));
             Assert.assertFalse("Stringified json should not include info: [" + json + "]", 
                     json.contains("more_info"));
         }};
