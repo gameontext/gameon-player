@@ -22,12 +22,21 @@ dependencies {
     // the entire couch & jackson dependency collection will not
     // makes a mess with slf4j and jackson..
 
-    compile ('org.ektorp:org.ektorp:1.4.4') {
+    compile ('org.ektorp:org.ektorp:1.5.0') {
+        exclude group: 'com.fasterxml.jackson'
         exclude group: 'org.slf4j'
     }
-    compile ('io.jsonwebtoken:jjwt:0.5.1') {
+
+    compile 'io.jsonwebtoken:jjwt-api:0.10.5'
+    runtime ('io.jsonwebtoken:jjwt-impl:0.10.5' ) {
+        exclude group: 'com.fasterxml.jackson'
         exclude group: 'org.slf4j'
     }
+    runtime ('io.jsonwebtoken:jjwt-jackson:0.10.5' ) {
+        exclude group: 'com.fasterxml.jackson'
+        exclude group: 'org.slf4j'
+    }
+
     compile ('com.google.api-client:google-api-client:1.19.1') {
         exclude group: 'com.fasterxml.jackson'
         exclude group: 'org.slf4j'
@@ -36,20 +45,20 @@ dependencies {
       exclude group: 'org.slf4j'
     }
 
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.1.3'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.4.2'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.2'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.0'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.9.6'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.6'
     compile 'org.slf4j:slf4j-jdk14:1.7.13'
     compile 'org.slf4j:jcl-over-slf4j:1.7.13'
 
-    jmockit 'org.jmockit:jmockit:1.22'
+    jmockit 'org.jmockit:jmockit:1.41'
     testCompile 'junit:junit:4.12'
     testCompile 'org.glassfish:javax.json:1.0.4'
 }
 
 test {
-   jvmArgs "-javaagent:${configurations.jmockit.singleFile.absolutePath}"
+    jvmArgs "-javaagent:${configurations.jmockit.find { it.name.startsWith("jmockit") }.absolutePath}"
 }
 
 // Keep test and application binaries separate

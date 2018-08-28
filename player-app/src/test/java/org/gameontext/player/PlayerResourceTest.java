@@ -83,9 +83,9 @@ public class PlayerResourceTest {
         claims.put("email","example@test.test");
         claims.setAudience("client");
         new Expectations() {{
-            request.getAttribute("player.claims"); returns(claims);
-            request.getAttribute("player.id"); returns(playerId);
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.claims"); result = claims;
+            request.getAttribute("player.id"); result = playerId;
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         PlayerResponse result = tested.getPlayerInformation(playerId);
@@ -98,8 +98,8 @@ public class PlayerResourceTest {
     public void checkGetMissingId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
-            request.getAttribute("player.id"); returns(null);
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.id"); result = null;
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         PlayerResponse result = tested.getPlayerInformation(playerId);
@@ -112,8 +112,8 @@ public class PlayerResourceTest {
     public void checkMismatchedId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
-            request.getAttribute("player.id"); returns("wibble");
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.id"); result = "wibble";
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         PlayerResponse result = tested.getPlayerInformation(playerId);
@@ -126,7 +126,7 @@ public class PlayerResourceTest {
     public void checkUnknownId(@Mocked PlayerDbRecord record, @Mocked PlayerResponse player) throws IOException {
         String playerId = "fish";
         new Expectations() {{
-            request.getAttribute("player.id"); returns(playerId);
+            request.getAttribute("player.id"); result = playerId;
             dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
@@ -138,8 +138,8 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns("game-on.org");
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.id"); result = "game-on.org";
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         PlayerResponse result = tested.getPlayerInformation(playerId);
@@ -154,8 +154,8 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId);
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.id"); result = playerId;
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         tested.removePlayer(playerId);
@@ -173,7 +173,7 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(null);
+            request.getAttribute("player.id"); result = null;
         }};
 
         tested.removePlayer(playerId);
@@ -185,8 +185,8 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns("game-on.org");
-            dbi.get(PlayerDbRecord.class, playerId); returns(playerDb);
+            request.getAttribute("player.id"); result = "game-on.org";
+            dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
         tested.removePlayer(playerId);
@@ -204,7 +204,7 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns("Biscuit");
+            request.getAttribute("player.id"); result = "Biscuit";
         }};
 
         tested.removePlayer(playerId);
@@ -216,7 +216,7 @@ public class PlayerResourceTest {
         String playerId = "fish";
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId);
+            request.getAttribute("player.id"); result = playerId;
             dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
@@ -237,9 +237,9 @@ public class PlayerResourceTest {
         claims.setAudience("client");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId);
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.id"); result = playerId;
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
         PlayerArgument proposed = new PlayerArgument();
@@ -277,9 +277,9 @@ public class PlayerResourceTest {
 
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns("game-on.org");
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.id"); result = "game-on.org";
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
         PlayerArgument proposed = new PlayerArgument();
@@ -313,7 +313,7 @@ public class PlayerResourceTest {
         claims.setAudience("client");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns("game-on.org");
+            request.getAttribute("player.id"); result = "game-on.org";
             dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
@@ -339,7 +339,7 @@ public class PlayerResourceTest {
         claims.setAudience("client");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId+"FISH");
+            request.getAttribute("player.id"); result = playerId+"FISH";
         }};
 
         PlayerArgument proposed = new PlayerArgument();
@@ -361,9 +361,9 @@ public class PlayerResourceTest {
         claims.setAudience("client");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId);
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.id"); result = playerId;
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
         PlayerArgument proposed = new PlayerArgument();
@@ -407,9 +407,9 @@ public class PlayerResourceTest {
 
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); returns(playerId);
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.id"); result = playerId;
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
 
@@ -449,8 +449,8 @@ public class PlayerResourceTest {
         claims.setAudience("server");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
         tested.updatePlayerLocation(playerId, locChange);
@@ -481,8 +481,8 @@ public class PlayerResourceTest {
         claims.setAudience("server");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
 
         tested.updatePlayerLocation(playerId, locChange);
@@ -513,8 +513,8 @@ public class PlayerResourceTest {
         claims.setAudience("server");
         new Expectations() {{
             tested.systemId = "game-on.org";
-            request.getAttribute("player.claims"); returns(claims);
-            dbi.get(PlayerDbRecord.class, playerId); returns(dbEntry);
+            request.getAttribute("player.claims"); result = claims;
+            dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
             dbi.update(any); result = new UpdateConflictException();
         }};
 

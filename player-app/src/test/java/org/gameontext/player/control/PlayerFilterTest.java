@@ -76,7 +76,7 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getParameterValues("jwt"); returns(new String[]{newJwt});
+            request.getParameterValues("jwt"); result = new String[]{newJwt};
         }};
 
         //invoke the filter
@@ -116,9 +116,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getParameterValues("jwt"); returns(new String[]{newJwt});
-            request.getMethod(); returns("POST");
-            request.getContextPath(); returns ("/accounts");
+            request.getParameterValues("jwt"); result = new String[]{newJwt};
+            request.getMethod(); result = "POST";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
@@ -143,9 +143,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getParameterValues("jwt"); returns(new String[]{});
-            request.getMethod(); returns("POST");
-            request.getContextPath(); returns ("/accounts");
+            request.getParameterValues("jwt"); result = new String[]{};
+            request.getMethod(); result = "POST";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
@@ -170,9 +170,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getParameterValues("jwt"); returns(new String[]{});
-            request.getMethod(); returns("GET");
-            request.getContextPath(); returns ("/accounts");
+            request.getParameterValues("jwt"); result = new String[]{};
+            request.getMethod(); result = "GET";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
@@ -207,7 +207,7 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{newJwt})));
+            request.getHeaders("gameon-jwt"); result = Collections.enumeration(Arrays.asList(new String[]{newJwt}));
         }};
 
         //invoke the filter
@@ -247,9 +247,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{newJwt})));
-            request.getMethod(); returns("POST");
-            request.getContextPath(); returns ("/accounts");
+            request.getHeaders("gameon-jwt"); result = Collections.enumeration(Arrays.asList(new String[]{newJwt}));
+            request.getMethod(); result = "POST";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
@@ -274,9 +274,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{})));
-            request.getMethod(); returns("POST");
-            request.getContextPath(); returns ("/accounts");
+            request.getHeaders("gameon-jwt"); result = Collections.enumeration(Arrays.asList(new String[]{}));
+            request.getMethod(); result = "POST";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
@@ -301,9 +301,9 @@ public class PlayerFilterTest {
 
         //expected calls..(and mock responses)
         new Expectations() {{
-            request.getHeaders("gameon-jwt"); returns(Collections.enumeration(Arrays.asList(new String[]{})));
-            request.getMethod(); returns("GET");
-            request.getContextPath(); returns ("/accounts");
+            request.getHeaders("gameon-jwt"); result = Collections.enumeration(Arrays.asList(new String[]{}));
+            request.getMethod(); result = "GET";
+            request.getContextPath(); result = "/accounts";
         }};
 
         //invoke the filter
