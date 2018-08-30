@@ -17,11 +17,17 @@ package org.gameontext.player;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -33,123 +39,166 @@ import org.apache.kafka.common.KafkaException;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.utils.Log;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 @ApplicationScoped
-public class Kafka {
+public class Kafka implements Runnable {
 
-   @Resource(lookup="kafkaUrl")
-   protected String kafkaUrl;
+    @Resource(lookup="kafkaUrl")
+    protected String kafkaUrl;
 
-   private Producer<String,String> producer=null;
-   protected final ObjectMapper mapper = new ObjectMapper();
-   public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,UPDATE_EMAIL,CREATE,DELETE}; 
+    @Resource
+    protected ManagedThreadFactory threadFactory;
 
-   
-   public Kafka(){
-   }
+    private Producer<String,String> producer=null;
+    protected final ObjectMapper mapper = new ObjectMapper();
+    public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,UPDATE_EMAIL,CREATE,DELETE};
 
-   private boolean multipleHosts(){
-       //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
-       //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
-       //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
-       return kafkaUrl.indexOf(",") != -1;
-   }
+    private Thread thread;
+    private volatile boolean keepGoing = true;
 
-   @PostConstruct
-   public void init(){
+    /** Queue of events  */
+    private final LinkedBlockingDeque<ProducerRecord<String,String>> pendingEvents;
 
-     try{
-         try{
-             //Kafka client expects this property to be set and pointing at the
-             //jaas config file.. except when running in liberty, we don't need
-             //one of those.. thankfully, neither does kafka client, it just doesn't
-             //know that.. so we'll set this to an empty string to bypass the check.
-             if(System.getProperty("java.security.auth.login.config")==null){
-               System.setProperty("java.security.auth.login.config", "");
-             }
+    public Kafka() {
+        this.pendingEvents = new LinkedBlockingDeque<>();
+    }
 
-             Log.log(Level.INFO, this, "Initializing kafka producer for url {0}", kafkaUrl);
-             Properties producerProps = new Properties();
-             producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUrl);
-             producerProps.put(ProducerConfig.ACKS_CONFIG,"-1");
-             producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-player");
-             producerProps.put(ProducerConfig.RETRIES_CONFIG,0);
-             producerProps.put(ProducerConfig.BATCH_SIZE_CONFIG,16384);
-             producerProps.put(ProducerConfig.LINGER_MS_CONFIG,1);
-             producerProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG,33554432);
-             producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
-             producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+    private boolean multipleHosts(){
+        //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
+        //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
+        //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
+        return kafkaUrl.indexOf(",") != -1;
+    }
 
-             //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
-             //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
-             //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
-             boolean multipleHosts = multipleHosts();
-             if(multipleHosts){
-               Log.log(Level.INFO, this, "Initializing SSL Config for MessageHub");
-               producerProps.put("security.protocol","SASL_SSL");
-               producerProps.put("ssl.protocol","TLSv1.2");
-               producerProps.put("ssl.enabled.protocols","TLSv1.2");
-               Path p = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
-               producerProps.put("ssl.truststore.location", p.toString());
-               producerProps.put("ssl.truststore.password","changeit");
-               producerProps.put("ssl.truststore.type","JKS");
-               producerProps.put("ssl.endpoint.identification.algorithm","HTTPS");
-             }
+    @PostConstruct
+    public void init(){
+        try{
+            try{
+                //Kafka client expects this property to be set and pointing at the
+                //jaas config file.. except when running in liberty, we don't need
+                //one of those.. thankfully, neither does kafka client, it just doesn't
+                //know that.. so we'll set this to an empty string to bypass the check.
+                if(System.getProperty("java.security.auth.login.config")==null){
+                System.setProperty("java.security.auth.login.config", "");
+                }
 
-             producer = new KafkaProducer<String, String>(producerProps);
+                Log.log(Level.INFO, this, "Initializing kafka producer for url {0}", kafkaUrl);
+                Properties producerProps = new Properties();
+                producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaUrl);
+                producerProps.put(ProducerConfig.ACKS_CONFIG,"-1");
+                producerProps.put(ProducerConfig.CLIENT_ID_CONFIG,"gameon-player");
+                producerProps.put(ProducerConfig.RETRIES_CONFIG,0);
+                producerProps.put(ProducerConfig.BATCH_SIZE_CONFIG,16384);
+                producerProps.put(ProducerConfig.LINGER_MS_CONFIG,1);
+                producerProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG,33554432);
+                producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+                producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
 
-         }catch(KafkaException k){
-             Throwable cause = k.getCause();
-             if(cause.getMessage().contains("DNS resolution failed for url") && multipleHosts()){
-                 Log.log(Level.SEVERE, this, "Error during Kafka Init. Kafka will be unavailable. You may need to restart all linked containers.", cause);
-             }else{
-                 throw k;
-             }
-         }
-     }catch(Exception e){
-         Log.log(Level.SEVERE, this, "Unknown error during kafka init, please report ", e);
-     }
-   }
+                //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
+                //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
+                //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
+                boolean multipleHosts = multipleHosts();
+                if(multipleHosts){
+                Log.log(Level.INFO, this, "Initializing SSL Config for MessageHub");
+                producerProps.put("security.protocol","SASL_SSL");
+                producerProps.put("ssl.protocol","TLSv1.2");
+                producerProps.put("ssl.enabled.protocols","TLSv1.2");
+                Path p = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
+                producerProps.put("ssl.truststore.location", p.toString());
+                producerProps.put("ssl.truststore.password","changeit");
+                producerProps.put("ssl.truststore.type","JKS");
+                producerProps.put("ssl.endpoint.identification.algorithm","HTTPS");
+                }
 
-   public void publishMessage(String topic, String key, String message){
-       final Callback callback = (RecordMetadata m, Exception e) -> {
-           if ( e == null ) {
-               Log.log(Level.FINER, this, "Published Event");
-           } else {
-               Log.log(Level.FINER, this, "Error publishing event", e);
-           }
-       };
+                producer = new KafkaProducer<String, String>(producerProps);
 
-       if(producer!=null){
-           Log.log(Level.FINER, this, "Publishing Event {0} {1} {2}",topic,key,message);
-           ProducerRecord<String,String> pr = new ProducerRecord<String,String>(topic, key, message);
-           producer.send(pr, callback);
-       } else{
-           Log.log(Level.FINER, this, "Kafka Unavailable, ignoring event {0} {1} {2}",topic,key,message);
-       }
-   }
+                threadFactory.newThread(this).start();
+            } catch(KafkaException k) {
+                Throwable cause = k.getCause();
+                if(cause.getMessage().contains("DNS resolution failed for url") && multipleHosts()){
+                    Log.log(Level.SEVERE, this, "Error during Kafka Init. Kafka will be unavailable. You may need to restart all linked containers.", cause);
+                }else{
+                    throw k;
+                }
+            }
+        }catch(Exception e){
+            Log.log(Level.SEVERE, this, "Unknown error during kafka init, please report ", e);
+        }
+    }
 
-   public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player){
-       try{
-           //note that messagehub topics are charged, so we must only
-           //create them via the bluemix ui, to avoid accidentally
-           //creating a thousand topics =)
-           String topic = "playerEvents";
-           //playerEvents are keyed by player id.
-           String key = player.getId();
+    public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player) {
+        publishPlayerEvent(eventType, player, null);
+    }
 
-           ObjectNode rootNode = mapper.createObjectNode();
-           rootNode.put("type", eventType.name());
-           rootNode.set("player", mapper.valueToTree(player));
+    public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player, String origin) {
+        if ( producer == null ) {
+            Log.log(Level.FINEST, this, "Kafka Unavailable, ignoring event {0} {1} {2}", eventType, player.getId(), origin);
+            return;
+        }
 
-           String message = mapper.writeValueAsString(rootNode);
+        try{
+            //note that messagehub topics are charged, so we must only
+            //create them via the bluemix ui, to avoid accidentally
+            //creating a thousand topics =)
+            String topic = "playerEvents";
+            //playerEvents are keyed by player id.
+            String key = player.getId();
 
-           publishMessage(topic, key, message);
-       }catch(JsonProcessingException e){
-           Log.log(Level.SEVERE, this, "Error during event publish, could not build json for player with id "+player.getId(),e);
-       }
-   }
+            ObjectNode rootNode = mapper.createObjectNode();
+            rootNode.put("type", eventType.name());
+            rootNode.set("player", mapper.valueToTree(player));
+
+            if ( origin != null ) {
+                rootNode.put("origin", origin);
+            }
+
+            String message = mapper.writeValueAsString(rootNode);
+
+            Log.log(Level.FINEST, this, "Queueing event {0} {1} {2}", topic, key, message);
+            ProducerRecord<String,String> pr = new ProducerRecord<String,String>(topic, key, message);
+            pendingEvents.offer(pr);
+        } catch(JsonProcessingException e) {
+            Log.log(Level.SEVERE, this, "Error during event publish, could not build json for player with id "+player.getId(),e);
+        }
+    }
+
+    @Override
+    public void run() {
+        final Callback callback = (RecordMetadata m, Exception e) -> {
+            if ( e == null ) {
+                Log.log(Level.FINEST, this, "Published Event");
+            } else {
+                Log.log(Level.FINER, this, "Error publishing event", e);
+            }
+        };
+
+        Log.log(Level.FINER, this, "DRAIN OPEN");
+        boolean interrupted = false;
+
+        // Dedicated thread for pushing messages to kafka. This sometimes takes longer
+        // than expected. Using this removes that lag from the request thread.
+        while (keepGoing) {
+            try {
+                ProducerRecord<String,String> pr = pendingEvents.take();
+                Log.log(Level.FINEST, this, "Publishing Event", pr);
+                producer.send(pr, callback);
+            } catch (InterruptedException ex) {
+                interrupted = true;
+            }
+        }
+
+        Log.log(Level.FINER, this, "DRAIN CLOSED");
+
+        // reset interrupted flag
+        if (interrupted)
+            Thread.currentThread().interrupt();
+    }
+
+    public void stop() {
+        keepGoing = false;
+
+        // Interrupt the other thread
+        if (thread != null) {
+            thread.interrupt();
+        }
+    }
 }
