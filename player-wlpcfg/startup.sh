@@ -51,7 +51,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export MESSAGEHUB_USER=$(etcdctl get /kafka/user)
   export MESSAGEHUB_PASSWORD=$(etcdctl get /passwords/kafka)
   cd ${SERVER_PATH}
-  wget https://github.com/ibm-messaging/message-hub-samples/blob/master/kafka-0.9/message-hub-login-library/messagehub.login-1.0.0.jar?raw=true
+  wget https://github.com/ibm-messaging/message-hub-samples/raw/master/kafka-0.9/message-hub-login-library/messagehub.login-1.0.0.jar
 fi
 
 if [ -f /etc/cert/cert.pem ]; then
