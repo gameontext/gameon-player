@@ -16,6 +16,7 @@
 package org.gameontext.player;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -42,6 +43,7 @@ import org.gameontext.player.entity.PlayerCredentials;
 import org.gameontext.player.entity.PlayerDbRecord;
 import org.gameontext.player.entity.PlayerLocation;
 import org.gameontext.player.entity.PlayerResponse;
+import org.gameontext.player.utils.Log;
 import org.gameontext.player.utils.SharedSecretGenerator;
 
 import io.jsonwebtoken.Claims;
@@ -79,8 +81,8 @@ public class PlayerAccountResource {
         notes = "",
         response = PlayerResponse.class)
     @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerResponse.class),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
+            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response = ErrorResponse.class),
     })
     public PlayerResponse getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
@@ -163,11 +165,9 @@ public class PlayerAccountResource {
         }
 
         db.update(fullPlayer);
-
         kafka.publishPlayerEvent(PlayerEvent.UPDATE, fullPlayer);
 
         PlayerResponse pr = new PlayerResponse(fullPlayer);
-
         return Response.ok(pr).build();
     }
 
@@ -238,6 +238,8 @@ public class PlayerAccountResource {
 
         String oldLocation = update.getOldLocation();
         String newLocation = update.getNewLocation();
+        String origin = update.getOrigin();
+
         PlayerLocation finalLocation = new PlayerLocation();
 
         // try setting to the new location
@@ -245,10 +247,11 @@ public class PlayerAccountResource {
         if (p.getLocation()==null || p.getLocation().equals(oldLocation)) {
             p.setLocation(newLocation);
             db.update(p);
+            Log.log(Level.FINEST, this, "{0} moved from {1} to {2}", p.getName(), oldLocation, newLocation);
 
             rc = HttpServletResponse.SC_OK;
             finalLocation.setLocation(newLocation);
-            kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p);
+            kafka.publishPlayerEvent(PlayerEvent.UPDATE_LOCATION, p, origin);
         } else {
             rc = HttpServletResponse.SC_CONFLICT;
             finalLocation.setLocation(p.getLocation());

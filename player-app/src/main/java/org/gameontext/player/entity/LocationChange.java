@@ -18,6 +18,12 @@ public class LocationChange {
             required = true)
     protected String newLocation;
 
+    @ApiModelProperty(
+        value = "uuid of request origin (not stored)",
+        example = "origin_uuid",
+        required = true)
+    protected String origin;
+
     public String getOldLocation() {
         return oldLocation;
     }
@@ -34,5 +40,11 @@ public class LocationChange {
         this.newLocation = newLocation;
     }
     
-    
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    } 
 }
