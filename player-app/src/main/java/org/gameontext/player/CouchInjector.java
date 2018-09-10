@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 
 import javax.annotation.Resource;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 import org.ektorp.CouchDbConnector;
@@ -41,7 +42,7 @@ public class CouchInjector {
 
     public static final String DB_NAME = "playerdb";
 
-    @Produces
+    @Produces @ApplicationScoped
     public CouchDbConnector expose() {
 
         try {
