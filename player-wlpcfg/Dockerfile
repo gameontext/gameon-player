@@ -1,4 +1,4 @@
-FROM gameontext/docker-liberty-custom:latest
+FROM gameontext/docker-liberty-custom:master-12
 
 ENV SERVERDIRNAME player
 
