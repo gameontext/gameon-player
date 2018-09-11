@@ -9,6 +9,7 @@
     <feature>jsonp-1.0</feature>
     <feature>jndi-1.0</feature>
     <feature>concurrent-1.0</feature>
+    <feature>microprofile-1.3</feature>
   </featureManager>
 
   <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
