@@ -34,8 +34,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 /**
- * The Player Name Service, where we get to come up with names for players.. 
+ * The Player Name Service, where we get to come up with names for players..
  *
  */
 @Path("/name")
@@ -45,7 +48,7 @@ public class PlayerNameResource {
     @Context
     HttpServletRequest httpRequest;
 
-    //tables brought over from javascript.. 
+    //tables brought over from javascript..
     private final static String[] size = {"Tiny","Small","Large","Gigantic","Enormous"};
     private final static String[] composition = {"Chocolate","Fruit","GlutenFree","Sticky"};
     private final static String[] extra = {"Iced","Frosted","CreamFilled","JamFilled","MapleSyrupSoaked","SprinkleCovered"};
@@ -57,14 +60,24 @@ public class PlayerNameResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get ten randomly generated player names", 
-        notes = "", 
+    @ApiOperation(value = "Get ten randomly generated player names",
+        notes = "",
         responseContainer = "List",
         response = String.class)
         @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, 
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL,
                     responseContainer = "List", response = String.class),
     })
+    @Timed(name = "getNames_timer",
+        reusable = true,
+        tags = "label=playerNameResource")
+    @Counted(name = "getNames_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerNameResource")
+    @Metered(name = "getNames_meter",
+        reusable = true,
+        tags = "label=playerNameResource")
     public List<String> getNames() {
         Set<String> tenNames = new HashSet<String>();
         while(tenNames.size()<10){
