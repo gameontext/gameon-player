@@ -41,6 +41,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 /**
  * The Player location service, where we get to say where the players are.
  *
@@ -57,16 +60,26 @@ public class PlayerLocationsResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get player locations.", 
+    @ApiOperation(value = "Get player locations.",
         notes = "can pass optional params playerId to retrieve only location for player, "
                +"or siteId to retrieve players in a location, combining the two will return an empty"
-               +" map if the player is not in that location", 
+               +" map if the player is not in that location",
         responseContainer = "Map")
     @ApiResponses(value = {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL,
                     responseContainer = "Map"),
             @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
+    @Timed(name = "getPlayerLocationInformation_timer",
+        reusable = true,
+        tags = "label=playerLocationsResource")
+    @Counted(name = "getPlayerLocationInformation_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerLocationsResource")
+    @Metered(name = "getPlayerLocationInformation_meter",
+        reusable = true,
+        tags = "label=playerLocationsResource")
     public Map<String,String> getPlayerLocationInformation(
             @ApiParam(value = "target player id", required = false) @QueryParam("playerId") String playerId,
             @ApiParam(value = "target site id", required = false) @QueryParam("siteId") String siteId) throws IOException {
@@ -75,7 +88,7 @@ public class PlayerLocationsResource {
         
         if(playerId!=null){
             PlayerDbRecord p = db.get(PlayerDbRecord.class, playerId);
-            if(siteId==null || siteId.equals(p.getLocation()) || 
+            if(siteId==null || siteId.equals(p.getLocation()) ||
                 (siteId.equals(PlayerApplication.FIRST_ROOM) && p.getLocation()==null)
               ){
                 locations.put(p.getId(), p.getLocation()==null?PlayerApplication.FIRST_ROOM:p.getLocation());
@@ -85,8 +98,8 @@ public class PlayerLocationsResource {
             List<PlayerDbRecord> results = db.queryView(all, PlayerDbRecord.class);
             results
                 .stream()
-                .filter( player -> siteId==null || 
-                                   siteId.equals(player.getLocation()) || 
+                .filter( player -> siteId==null ||
+                                   siteId.equals(player.getLocation()) ||
                                   (siteId.equals(PlayerApplication.FIRST_ROOM) && player.getLocation()==null)
                        )
                 .forEach( player -> locations.put(player.getId(), player.getLocation()==null?PlayerApplication.FIRST_ROOM:player.getLocation()));

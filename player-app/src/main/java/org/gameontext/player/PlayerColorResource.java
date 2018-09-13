@@ -32,6 +32,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 /**
  * The Player Color Service, where we get to come up with the players favorite color, as long as they like pink.
  *
@@ -49,14 +52,24 @@ public class PlayerColorResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get ten generated colors", 
-        notes = "", 
+    @ApiOperation(value = "Get ten generated colors",
+        notes = "",
         responseContainer = "List",
         response = String.class)
         @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, 
+            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL,
                     responseContainer = "List", response = String.class),
     })
+    @Timed(name = "getColors_timer",
+        reusable = true,
+        tags = "label=playerColorResource")
+    @Counted(name = "getColors_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerColorResource")
+    @Metered(name = "getColors_meter",
+        reusable = true,
+        tags = "label=playerColorResource")
     public List<String> getColors() {
         Set<String> tenColors = new HashSet<String>();
         while(tenColors.size()<10){
