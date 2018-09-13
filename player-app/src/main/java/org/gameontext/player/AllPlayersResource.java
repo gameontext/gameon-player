@@ -51,6 +51,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+
 /**
  * All the players, and searching for players.
  *
@@ -80,6 +84,16 @@ public class AllPlayersResource {
         @ApiResponse(code = 200, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
         @ApiResponse(code = 204, message = Messages.CONFLICT, response=ErrorResponse.class)
     })
+    @Timed(name = "getAllPlayers_timer",
+        reusable = true,
+        tags = "label=allPlayersResource")
+    @Counted(name = "getAllPlayers_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=allPlayersResource")
+    @Metered(name = "getAllPlayers_meter",
+        reusable = true,
+        tags = "label=allPlayersResource")
     public Response getAllPlayers() throws IOException {
         ViewQuery all = new ViewQuery().designDocId("_design/players").viewName("all").cacheOk(true).includeDocs(true);
         List<PlayerDbRecord> results = db.queryView(all, PlayerDbRecord.class);
@@ -113,6 +127,16 @@ public class AllPlayersResource {
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = "Authenticated user id must match new player id", response=ErrorResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class)
         })
+    @Timed(name = "createPlayer_timer",
+        reusable = true,
+        tags = "label=allPlayersResource")
+    @Counted(name = "getAllPlayers_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=allPlayersResource")
+    @Metered(name = "getAllPlayers_meter",
+        reusable = true,
+        tags = "label=allPlayersResource")
     public Response createPlayer(PlayerArgument player) throws IOException {
 
         // set by the auth filter.

@@ -53,6 +53,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Metered;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -84,6 +87,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response = ErrorResponse.class),
     })
+    @Timed(name = "getPlayerInformation_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "getPlayerInformation_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "getPlayerInformation_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public PlayerResponse getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -113,6 +126,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update specified player", response=ErrorResponse.class)
     })
+    @Timed(name = "updatePlayer_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "updatePlayer_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "updatePlayer_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public Response updatePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id,
             @ApiParam(value = "Updated player attributes", required = true) PlayerArgument newPlayer) throws IOException {
@@ -159,6 +182,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "delete specified player", response=ErrorResponse.class)
     })
+    @Timed(name = "removePlayer_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "removePlayer_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "removePlayer_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public Response removePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -200,6 +233,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + "update player location", response=ErrorResponse.class)
     })
+    @Timed(name = "updatePlayerLocation_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "updatePlayerLocation_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "getPlayerLocation_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
 
         // we don't want to allow this method to be invoked by a user.
@@ -248,6 +291,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerLocation.class),
             @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
+    @Timed(name = "getPlayerLocation_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "getPlayerLocation_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "getPlayerLocation_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
         PlayerDbRecord p;
@@ -268,6 +321,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL, response=PlayerCredentials.class),
             @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
     })
+    @Timed(name = "getPlayerCredentials_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "getPlayerCredentials_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "getPlayerCredentials_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public PlayerCredentials getPlayerCredentials(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -306,6 +369,16 @@ public class PlayerAccountResource {
             @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
             @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player shared secret", response=ErrorResponse.class)
     })
+    @Timed(name = "updatePlayerApiKey_timer",
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Counted(name = "updatePlayerApiKey_count",
+        monotonic = true,
+        reusable = true,
+        tags = "label=playerAccountResource")
+    @Metered(name = "updatePlayerApiKey_meter",
+        reusable = true,
+        tags = "label=playerAccountResource")
     public Response updatePlayerApiKey(@PathParam("id") String id) throws IOException {
 
         // set by the auth filter.

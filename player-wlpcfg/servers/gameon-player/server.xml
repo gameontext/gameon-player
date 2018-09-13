@@ -12,7 +12,8 @@
     <feature>mpHealth-1.0</feature>
     <feature>mpMetrics-1.1</feature>
   </featureManager>
-
+  
+  <quickStartSecurity userName="admin" userPassword="password"/>
   <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
   <keyStore id="defaultTrustStore" location="truststore.jks" password="truststore"/>
 
