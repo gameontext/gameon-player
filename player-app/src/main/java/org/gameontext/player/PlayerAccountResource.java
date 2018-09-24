@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.gameontext.player;
 
+import java.time.temporal.ChronoUnit;
 import java.io.IOException;
 import java.util.logging.Level;
 
@@ -56,6 +57,9 @@ import io.swagger.annotations.ApiResponses;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -97,6 +101,9 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerInformation_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Fallback(fallbackMethod = "getPlayerInformationFallback")
+    @Timeout(value = 2, unit = ChronoUnit.SECONDS)
+    @Retry(maxRetries = 2, maxDuration= 10000)
     public PlayerResponse getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -110,6 +117,15 @@ public class PlayerAccountResource {
             pr.setCredentials(null);
         }
 
+        return pr;
+    }
+    
+    public PlayerResponse getPlayerInformationFallback(@ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
+        PlayerResponse pr = new PlayerResponse();
+        pr.setName("null");
+        pr.setLocation(null);
+        pr.setCredentials(null);
+        pr.setId("null");
         return pr;
     }
 
@@ -301,6 +317,9 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerLocation_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Fallback(fallbackMethod = "getPlayerLocationFallback")
+    @Timeout(value = 2, unit = ChronoUnit.SECONDS)
+    @Retry(maxRetries = 2, maxDuration= 10000)
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
         PlayerDbRecord p;
@@ -309,6 +328,13 @@ public class PlayerAccountResource {
 
         PlayerLocation location = new PlayerLocation();
         location.setLocation(p.getLocation());
+        return location;
+    }
+    
+    public PlayerLocation getPlayerLocationFallback (
+            @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
+        PlayerLocation location = new PlayerLocation();
+        location.setLocation("null");
         return location;
     }
 

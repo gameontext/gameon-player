@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.temporal.ChronoUnit;
 
 import javax.annotation.Resource;
 import javax.inject.Inject;
@@ -54,6 +55,12 @@ import io.swagger.annotations.ApiResponses;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+
+import javax.json.JsonObject;
+import javax.json.Json;
 
 /**
  * All the players, and searching for players.
@@ -84,6 +91,9 @@ public class AllPlayersResource {
         @ApiResponse(code = 200, message = Messages.SUCCESSFUL, response = PlayerResponse.class),
         @ApiResponse(code = 204, message = Messages.CONFLICT, response=ErrorResponse.class)
     })
+    @Fallback(fallbackMethod = "getAllPlayersFallback")
+    @Timeout(value = 2, unit = ChronoUnit.SECONDS)
+    @Retry(maxRetries = 2, maxDuration= 10000)
     @Timed(name = "getAllPlayers_timer",
         reusable = true,
         tags = "label=allPlayersResource")
@@ -111,6 +121,16 @@ public class AllPlayersResource {
             return Response.ok().entity(entity).build();
         }
     }
+    
+    public Response getAllPlayersFallback() {
+        JsonObject entity = Json.createObjectBuilder()
+         .add("name", "null")
+         .add("favoriteColor", "null")
+         .add("location", Json.createObjectBuilder().add("location", "null"))
+         .add("_id", "null")
+         .add("_rev", "null").build();
+        return Response.ok().entity(entity).build();
+    }
 
     /**
      * POST /players/v1/accounts
@@ -137,6 +157,8 @@ public class AllPlayersResource {
     @Metered(name = "getAllPlayers_meter",
         reusable = true,
         tags = "label=allPlayersResource")
+    @Timeout(value = 2, unit = ChronoUnit.SECONDS)
+    @Retry(maxRetries = 2, maxDuration= 10000)
     public Response createPlayer(PlayerArgument player) throws IOException {
 
         // set by the auth filter.
@@ -164,7 +186,6 @@ public class AllPlayersResource {
 
         return Response.created(URI.create("/players/v1/accounts/" + player.getId())).entity(pr).build();
     }
-
 
     private boolean stripSensitiveData(String user, String player) {
         return ( user == null || !(player.equals(user) || systemId.equals(user)) );
