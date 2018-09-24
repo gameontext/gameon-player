@@ -26,4 +26,3 @@ task clean {
     delete "servers/gameon-player/logs"
     delete "servers/gameon-player/workarea"
 }
-

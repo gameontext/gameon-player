@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.gameontext.player;
 
+import java.time.temporal.ChronoUnit;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,9 @@ import io.swagger.annotations.ApiResponses;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.metrics.annotation.Metered;
 import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 /**
  * The Player location service, where we get to say where the players are.
  *
@@ -80,6 +84,9 @@ public class PlayerLocationsResource {
     @Metered(name = "getPlayerLocationInformation_meter",
         reusable = true,
         tags = "label=playerLocationsResource")
+    @Fallback(fallbackMethod = "getPlayerLocationInformationFallback")
+    @Timeout(value = 2, unit = ChronoUnit.SECONDS)
+    @Retry(maxRetries = 2, maxDuration= 10000)
     public Map<String,String> getPlayerLocationInformation(
             @ApiParam(value = "target player id", required = false) @QueryParam("playerId") String playerId,
             @ApiParam(value = "target site id", required = false) @QueryParam("siteId") String siteId) throws IOException {
@@ -108,4 +115,11 @@ public class PlayerLocationsResource {
         return locations;
     }
     
+    public Map<String,String> getPlayerLocationInformationFallback(
+            @ApiParam(value = "target player id", required = false) @QueryParam("playerId") String playerId,
+            @ApiParam(value = "target site id", required = false) @QueryParam("siteId") String siteId) throws IOException {
+        Map<String,String> locations = new HashMap<String,String>();
+        locations.put("null", "null");
+        return locations;
+    }
 }
