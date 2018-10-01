@@ -17,7 +17,7 @@ public class PlayerHealth implements HealthCheck {
 
     @Override
     public HealthCheckResponse call() {
-      if ( db != null && db.getDbInfo() != null ) {
+      if ( isHealthy()) {
           return HealthCheckResponse.named(PlayersResource.class.getSimpleName())
                                     .withData(db.getDatabaseName(), "available").up().build();
       }
@@ -25,5 +25,19 @@ public class PlayerHealth implements HealthCheck {
       return HealthCheckResponse.named(PlayersResource.class.getSimpleName())
                                 .withData(db.getDatabaseName(), "down").down()
                                 .build();
+    }
+    
+    public boolean isHealthy() {
+    try{
+        if ( db.getConnection() != null && db.getDbInfo() != null ) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    catch(Exception e){
+        return false;
+    }
     }
 }

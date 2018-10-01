@@ -4,6 +4,7 @@
   <featureManager>
     <feature>websocket-1.1</feature>
     <feature>microprofile-1.3</feature>
+    <feature>usr:opentracingZipkin-0.31</feature>
   </featureManager>
   
   <quickStartSecurity userName="admin" userPassword="password"/>
@@ -50,7 +51,9 @@
   <executor coreThreads="5"  />
 
   <!-- new API as a separate war -->
-  <webApplication contextRoot="/players" id="player-app" location="player-app.war"/>
+  <webApplication contextRoot="/players" id="player-app" location="player-app.war">
+    <classloader apiTypeVisibility="api,ibm-api,spec,stable,third-party"/>
+  </webApplication>
   
   <jndiEntry jndiName="developmentMode" value="${env.GAMEON_MODE}"/>
   <jndiEntry jndiName="targetPlatform" value="${env.TARGET_PLATFORM}"/>
