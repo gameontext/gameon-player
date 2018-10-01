@@ -1,9 +1,27 @@
-apply plugin: 'eclipse'
-
 buildscript {
     repositories {
         mavenCentral()
     }
+}
+
+plugins {
+    id "de.undercouch.download" version "3.4.3"
+}
+
+apply plugin: 'eclipse'
+
+//COPY ./lib/features/<featureName> /opt/ol/wlp/lib/features/
+task downloadFile(type: Download) {
+    src 'https://github.com/WASdev/sample.opentracing.zipkintracer/releases/download/1.1/liberty-opentracing-zipkintracer-1.1-sample.zip'
+    dest "lib/features/liberty-opentracing-zipkintracer-1.1-sample.zip"
+}
+
+task unzipFile(type: Copy) {
+    dependsOn 'downloadFile'
+    def zipFile = file("lib/features/liberty-opentracing-zipkintracer-1.1-sample.zip")
+    def outputDir = file("lib/features/")
+    from zipTree(zipFile)
+    into outputDir
 }
 
 task copyWAR(type: Copy) {
@@ -18,11 +36,14 @@ task copyLibs(type: Copy) {
     exclude 'player*'
 }
 
-task build(dependsOn: ['copyWAR', 'copyLibs']){
+task build(dependsOn: ['copyWAR', 'copyLibs', 'unzipFile']){
 }
+/*task build(dependsOn: ['copyWAR', 'copyLibs']){
+}*/
 task clean {
     delete "servers/gameon-player/apps"
     delete "servers/gameon-player/lib"
     delete "servers/gameon-player/logs"
     delete "servers/gameon-player/workarea"
+    delete "lib"
 }

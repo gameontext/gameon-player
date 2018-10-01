@@ -58,6 +58,7 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.opentracing.Traced;
 
 import javax.json.JsonObject;
 import javax.json.Json;
@@ -104,10 +105,10 @@ public class AllPlayersResource {
     @Metered(name = "getAllPlayers_meter",
         reusable = true,
         tags = "label=allPlayersResource")
+    @Traced(value = true, operationName = "getAllPlayers.response")
     public Response getAllPlayers() throws IOException {
         ViewQuery all = new ViewQuery().designDocId("_design/players").viewName("all").cacheOk(true).includeDocs(true);
         List<PlayerDbRecord> results = db.queryView(all, PlayerDbRecord.class);
-
         if ( results.isEmpty() )
             return Response.noContent().build();
         else {
