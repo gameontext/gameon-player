@@ -2,20 +2,15 @@
 
     <!-- Enable features -->
   <featureManager>
-    <feature>websocket-1.1</feature>
-<<<<<<< HEAD
-    <feature>jaxrs-2.0</feature>
     <feature>cdi-1.2</feature>
     <feature>ssl-1.0</feature>
     <feature>jsonp-1.0</feature>
-    <feature>jndi-1.0</feature>
-    <feature>concurrent-1.0</feature>
-    <feature>mpHealth-1.0</feature>
+    <feature>jndi-1.0</feature>  
+    <feature>websocket-1.1</feature>
     <feature>mpMetrics-1.1</feature>
-=======
-    <feature>microprofile-1.3</feature>
-    <feature>usr:opentracingZipkin-0.31</feature>
->>>>>>> Added metrics, fallback, fault tolerance, and working on open-tracing
+    <feature>mpHealth-1.0</feature>
+    <feature>mpFaultTolerance-1.0</feature>
+    <feature>mpOpenAPI-1.0</feature>
   </featureManager>
   
   <quickStartSecurity userName="admin" userPassword="password"/>
@@ -25,10 +20,11 @@
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
 
-  <!-- if running locally, set this value to 127.0.0.1 or ${env.DOCKER_MACHINE_NAME}
-       to enable apidiscover explorer 'try it out' functionality.
-    <variable name="defaultHostName" value="127.0.0.1" />
-  -->
+
+  <variable name="defaultHostName" value="127.0.0.1" />
+
+
+  <opentracingZipkin host="${defaultHostName}" port="9411"/>
 
   <!-- To access this server from a remote client add a host attribute to
        the following element, e.g. host="*" -->
@@ -54,7 +50,8 @@
   <config updateTrigger="mbean" />
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
-  <logging traceSpecification="*=info:org.gameontext.*=all"/>
+  <!-- <logging traceSpecification="*=info:org.gameontext.*=all"/> -->
+  <logging traceSpecification="*=info:com.ibm.ws.opentracing*=all:com.ibm.ws.microprofile.opentracing*=all"/>
 
   <!-- This is required to prevent the web apps from being lazily loaded -->
   <webContainer deferServletLoad="false"/>
