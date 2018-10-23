@@ -20,11 +20,7 @@
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
 
-
-  <variable name="defaultHostName" value="127.0.0.1" />
-
-
-  <opentracingZipkin host="${defaultHostName}" port="9411"/>
+  <opentracingZipkin host="zipkin" port="9411"/>
 
   <!-- To access this server from a remote client add a host attribute to
        the following element, e.g. host="*" -->
