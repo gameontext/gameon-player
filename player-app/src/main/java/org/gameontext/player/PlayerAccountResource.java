@@ -34,6 +34,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.api.client.repackaged.com.google.common.annotations.GwtCompatible;
+
 import org.ektorp.CouchDbConnector;
 import org.gameontext.player.Kafka.PlayerEvent;
 import org.gameontext.player.control.PlayerAccountModificationException;
@@ -60,6 +62,9 @@ import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.opentracing.Traced;
+import io.opentracing.ActiveSpan;
+import io.opentracing.Tracer;
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -72,6 +77,9 @@ public class PlayerAccountResource {
 
     @Context
     HttpServletRequest httpRequest;
+
+    /*@Inject
+    Tracer tracer;*/
 
     @Inject
     protected CouchDbConnector db;
@@ -104,6 +112,7 @@ public class PlayerAccountResource {
     @Fallback(fallbackMethod = "getPlayerInformationFallback")
     @Timeout(value = 2, unit = ChronoUnit.SECONDS)
     @Retry(maxRetries = 2, maxDuration= 10000)
+    @Traced
     public PlayerResponse getPlayerInformation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -175,6 +184,7 @@ public class PlayerAccountResource {
     @Metered(name = "updatePlayer_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public Response updatePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id,
             @ApiParam(value = "Updated player attributes", required = true) PlayerArgument newPlayer) throws IOException {
@@ -231,6 +241,7 @@ public class PlayerAccountResource {
     @Metered(name = "removePlayer_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public Response removePlayer(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -282,8 +293,9 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerLocation_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
-
+        System.out.println("\n\n\n::::::It is in the updatePlayerLocation in Player!!!");
         // we don't want to allow this method to be invoked by a user.
         Claims claims = (Claims) httpRequest.getAttribute("player.claims");
         if ( !claims.getAudience().equals("server")) {
@@ -343,10 +355,12 @@ public class PlayerAccountResource {
     @Fallback(fallbackMethod = "getPlayerLocationFallback")
     @Timeout(value = 2, unit = ChronoUnit.SECONDS)
     @Retry(maxRetries = 2, maxDuration= 10000)
+    @Traced
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
         PlayerDbRecord p;
-
+        Log.log(Level.FINEST, this, "It is in the getPlayerLocation!!!");
+        System.out.println("It is in the getPlayerLocation!!!");
         p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
 
         PlayerLocation location = new PlayerLocation();
@@ -380,6 +394,7 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerCredentials_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public PlayerCredentials getPlayerCredentials(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
 
@@ -429,6 +444,7 @@ public class PlayerAccountResource {
     @Metered(name = "updatePlayerApiKey_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public Response updatePlayerApiKey(@PathParam("id") String id) throws IOException {
 
         // set by the auth filter.
@@ -493,6 +509,7 @@ public class PlayerAccountResource {
     @Metered(name = "updatePlayerEmail_meter",
         reusable = true,
         tags = "label=playerAccountResource")
+    @Traced
     public Response updatePlayerEmail(@PathParam("id") String id) throws IOException {
 
         // set by the auth filter.
@@ -537,5 +554,15 @@ public class PlayerAccountResource {
 
     private boolean unauthorizedId(String user, String player) {
         return ( user == null || !(player.equals(user) || systemId.equals(user)) );
+    }
+
+
+    @GET
+    @Path("/testMPRest")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testMPRest(@PathParam("id") String id) throws IOException {
+        System.out.println("It is in testMPRest");
+        return Response.ok(id).build();
     }
 }
