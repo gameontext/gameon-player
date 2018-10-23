@@ -10,7 +10,6 @@ plugins {
 
 apply plugin: 'eclipse'
 
-//COPY ./lib/features/<featureName> /opt/ol/wlp/lib/features/
 task downloadFile(type: Download) {
     src 'https://github.com/WASdev/sample.opentracing.zipkintracer/releases/download/1.1/liberty-opentracing-zipkintracer-1.1-sample.zip'
     dest "lib/features/liberty-opentracing-zipkintracer-1.1-sample.zip"
@@ -38,8 +37,7 @@ task copyLibs(type: Copy) {
 
 task build(dependsOn: ['copyWAR', 'copyLibs', 'unzipFile']){
 }
-/*task build(dependsOn: ['copyWAR', 'copyLibs']){
-}*/
+
 task clean {
     delete "servers/gameon-player/apps"
     delete "servers/gameon-player/lib"
