@@ -63,8 +63,6 @@ import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.opentracing.Traced;
-import io.opentracing.ActiveSpan;
-import io.opentracing.Tracer;
 /**
  * The Player service, where players remember where they are, and what they have
  * in their pockets.
@@ -77,9 +75,6 @@ public class PlayerAccountResource {
 
     @Context
     HttpServletRequest httpRequest;
-
-    /*@Inject
-    Tracer tracer;*/
 
     @Inject
     protected CouchDbConnector db;
