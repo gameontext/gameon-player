@@ -34,8 +34,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.google.api.client.repackaged.com.google.common.annotations.GwtCompatible;
-
 import org.ektorp.CouchDbConnector;
 import org.gameontext.player.Kafka.PlayerEvent;
 import org.gameontext.player.control.PlayerAccountModificationException;
