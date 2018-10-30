@@ -102,7 +102,6 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerInformation_meter",
         reusable = true,
         tags = "label=playerAccountResource")
-    @Fallback(fallbackMethod = "getPlayerInformationFallback")
     @Timeout(value = 2, unit = ChronoUnit.SECONDS)
     @Retry(maxRetries = 2, maxDuration= 10000)
     @Traced
@@ -119,15 +118,6 @@ public class PlayerAccountResource {
             pr.setCredentials(null);
         }
 
-        return pr;
-    }
-    
-    public PlayerResponse getPlayerInformationFallback(@ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
-        PlayerResponse pr = new PlayerResponse();
-        pr.setName("null");
-        pr.setLocation(null);
-        pr.setCredentials(null);
-        pr.setId("null");
         return pr;
     }
 
@@ -265,7 +255,6 @@ public class PlayerAccountResource {
         tags = "label=playerAccountResource")
     @Traced
     public Response updatePlayerLocation(@PathParam("id") String id, LocationChange update) throws IOException {
-        System.out.println("\n\n\n::::::It is in the updatePlayerLocation in Player!!!");
         // we don't want to allow this method to be invoked by a user.
         Claims claims = (Claims) httpRequest.getAttribute("player.claims");
         if ( !claims.getAudience().equals("server")) {
@@ -322,15 +311,12 @@ public class PlayerAccountResource {
     @Metered(name = "getPlayerLocation_meter",
         reusable = true,
         tags = "label=playerAccountResource")
-    @Fallback(fallbackMethod = "getPlayerLocationFallback")
     @Timeout(value = 2, unit = ChronoUnit.SECONDS)
     @Retry(maxRetries = 2, maxDuration= 10000)
     @Traced
     public PlayerLocation getPlayerLocation(
             @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
         PlayerDbRecord p;
-        Log.log(Level.FINEST, this, "It is in the getPlayerLocation!!!");
-        System.out.println("It is in the getPlayerLocation!!!");
         p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
 
         PlayerLocation location = new PlayerLocation();
@@ -338,12 +324,6 @@ public class PlayerAccountResource {
         return location;
     }
     
-    public PlayerLocation getPlayerLocationFallback (
-            @ApiParam(value = "target player id", required = true) @PathParam("id") String id) throws IOException {
-        PlayerLocation location = new PlayerLocation();
-        location.setLocation("null");
-        return location;
-    }
 
     @GET
     @Path("/credentials")
@@ -456,15 +436,5 @@ public class PlayerAccountResource {
 
     private boolean unauthorizedId(String user, String player) {
         return ( user == null || !(player.equals(user) || systemId.equals(user)) );
-    }
-
-
-    @GET
-    @Path("/testMPRest")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response testMPRest(@PathParam("id") String id) throws IOException {
-        System.out.println("It is in testMPRest");
-        return Response.ok(id).build();
     }
 }

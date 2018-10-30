@@ -27,11 +27,11 @@ public class PlayerHealth implements HealthCheck {
     }
     
     public boolean isHealthy() {
-    try{
-        return db.getConnection() != null && db.getDbInfo() != null;
-    }
-    catch(Exception e){
-        return false;
-    }
+        try {
+            return db.getConnection() != null && db.getDbInfo() != null;
+        }
+        catch(Exception e) {
+            return false;
+        }
     }
 }

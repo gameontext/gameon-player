@@ -46,8 +46,7 @@
   <config updateTrigger="mbean" />
   <applicationMonitor dropinsEnabled="false" updateTrigger="mbean"/>
 
-  <!-- <logging traceSpecification="*=info:org.gameontext.*=all"/> -->
-  <logging traceSpecification="*=info:com.ibm.ws.opentracing*=all:com.ibm.ws.microprofile.opentracing*=all"/>
+  <logging traceSpecification="*=info:org.gameontext.*=all"/>
 
   <!-- This is required to prevent the web apps from being lazily loaded -->
   <webContainer deferServletLoad="false"/>
