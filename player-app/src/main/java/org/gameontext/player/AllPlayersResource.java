@@ -18,6 +18,7 @@ package org.gameontext.player;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
@@ -124,12 +125,16 @@ public class AllPlayersResource {
     }
     
     public Response getAllPlayersFallback() {
-        JsonObject entity = Json.createObjectBuilder()
-         .add("name", "null")
-         .add("favoriteColor", "null")
-         .add("location", Json.createObjectBuilder().add("location", "null"))
-         .add("_id", "null")
-         .add("_rev", "null").build();
+        List<PlayerResponse> prs = new ArrayList<PlayerResponse>();
+        PlayerResponse pr = new PlayerResponse();
+        pr.setCredentials(null); 
+        pr.setName("null");
+        pr.setFavoriteColor("null");
+        pr.setLocation(null);
+        pr.setId("null");
+        pr.setRev("null");
+        prs.add(pr);
+        GenericEntity<List<PlayerResponse>> entity = new GenericEntity<List<PlayerResponse>>(prs) {};
         return Response.ok().entity(entity).build();
     }
 
