@@ -35,4 +35,5 @@ MicroProfile is an open platform that optimizes the Enterprise Java for microser
 ## Contributing
 
 Want to help! Pile On! 
+
 [Contributing to Game On!](CONTRIBUTING.md)
