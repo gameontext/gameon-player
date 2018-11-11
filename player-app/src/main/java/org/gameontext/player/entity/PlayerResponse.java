@@ -133,7 +133,6 @@ public class PlayerResponse {
         this.location.setLocation(db.getLocation());
         this.credentials = new PlayerCredentials();
         this.credentials.setSharedSecret(db.getApiKey());
-        this.credentials.setEmail(db.getEmail());
     }
 
     @Override
