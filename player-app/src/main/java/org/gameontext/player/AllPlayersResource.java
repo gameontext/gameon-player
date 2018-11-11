@@ -129,13 +129,10 @@ public class AllPlayersResource {
         PlayerDbRecord pFull = new PlayerDbRecord();
         pFull.update(player);   // get all proposed updates
         Claims claims = (Claims) httpRequest.getAttribute("player.claims");
-        if(claims!=null && claims.get("email")!=null){
-          pFull.setEmail(claims.get("email").toString());
-        }
-        
+
         // make sure an API key is generated for the new user
         pFull.setApiKey(SharedSecretGenerator.generateApiKey());
-        
+
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
 

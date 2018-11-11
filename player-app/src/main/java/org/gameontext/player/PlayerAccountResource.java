@@ -91,29 +91,6 @@ public class PlayerAccountResource {
         String authId = (String) httpRequest.getAttribute("player.id");
 
         PlayerDbRecord p = db.get(PlayerDbRecord.class, id); // throws DocumentNotFoundException
-
-        // because we added collecting emails after release, existing accounts can be
-        // missing email info, but if a player gets this far, they have seen & agreed
-        // to the t&c's via the login, so we update their record with the email from the
-        // jwt.
-        // we know the UI does a get against the ID to test if the user exists or not yet,
-        // during the initial login, so by adding this logic here, we use that call to
-        // update the player record with the email.
-        // Only do this for missing emails, where the jwt id matches the requested id.
-        // (eg, not for players with emails already set, and not for the system id)
-        if(p.getEmail()==null && authId!=null && authId.equals(id)) {
-          Claims claims = (Claims) httpRequest.getAttribute("player.claims");
-          //only do this bit for client based jwts.
-          if ( claims!=null && !claims.getAudience().equals("server")) {
-              //if the jwt has an email (older cached ones may not)
-              if(claims.get("email")!=null){
-                p.setEmail(claims.get("email").toString());
-                db.update(p);
-                kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
-              }
-          }
-        }
-
         PlayerResponse pr = new PlayerResponse(p);
 
         if (unauthorizedId(authId, id)) {
@@ -311,7 +288,6 @@ public class PlayerAccountResource {
 
         PlayerCredentials credentials = new PlayerCredentials();
         credentials.setSharedSecret(p.getApiKey());
-        credentials.setEmail(p.getEmail());
         return credentials;
     }
 
@@ -367,62 +343,6 @@ public class PlayerAccountResource {
                     Response.Status.FORBIDDEN,
                     "Unable to update player apikey",
                     "ApiKey use is banned for player id " + p.getId());
-        }
-    }
-
-    @PUT
-    @Path("/credentials/email")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(
-            value = "Update player contact email",
-            notes = "",
-            code = HttpServletResponse.SC_OK ,
-            response = PlayerArgument.class )
-    @ApiResponses(value = {
-            @ApiResponse(code = HttpServletResponse.SC_OK, message = Messages.SUCCESSFUL),
-            @ApiResponse(code = HttpServletResponse.SC_NOT_FOUND, message = Messages.NOT_FOUND, response=ErrorResponse.class),
-            @ApiResponse(code = HttpServletResponse.SC_CONFLICT, message = Messages.CONFLICT, response=ErrorResponse.class),
-            @ApiResponse(code = HttpServletResponse.SC_FORBIDDEN, message = Messages.FORBIDDEN + " update player contact email", response=ErrorResponse.class)
-    })
-    public Response updatePlayerEmail(@PathParam("id") String id) throws IOException {
-
-        // set by the auth filter.
-        String authId = (String) httpRequest.getAttribute("player.id");
-
-        // we don't want to allow this method to be invoked by the server (must be at user's request).
-        Claims claims = (Claims) httpRequest.getAttribute("player.claims");
-        if ( claims.getAudience().equals("server")) {
-            throw new PlayerAccountModificationException(
-                    Response.Status.FORBIDDEN,
-                    "Unable to update player email",
-                    "Invalid token type " + claims.getAudience());
-        }
-
-        if (unauthorizedId(authId, id)) {
-            if(authId==null){
-                authId="Unauthenticated User";
-            }
-            throw new PlayerAccountModificationException(
-                    Response.Status.FORBIDDEN,
-                    "Player " + id + " could not be updated",
-                    authId + " is not allowed to update player " + id);
-        }
-
-        PlayerDbRecord p = db.get(PlayerDbRecord.class, id);  // throws DocumentNotFoundException
-
-        //if no existing apikey, or apikey exists, but has not been perma-banned..
-        if( !ACCESS_DENIED.equals(p.getApiKey())){
-            if(claims.get("email")!=null){
-              p.setEmail(claims.get("email").toString());
-              db.update(p);
-            }
-            kafka.publishPlayerEvent(PlayerEvent.UPDATE_EMAIL, p);
-            return Response.ok(p).build();
-        }else{
-            throw new PlayerAccountModificationException(
-                    Response.Status.FORBIDDEN,
-                    "Unable to update player email",
-                    "Updates are banned for player id " + p.getId());
         }
     }
 

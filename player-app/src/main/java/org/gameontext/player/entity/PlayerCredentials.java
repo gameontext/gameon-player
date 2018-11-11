@@ -30,9 +30,6 @@ public class PlayerCredentials {
     @ApiModelProperty(value = "shared secret for player", example = "fjhre8h49hf438u9h45", required = true)
     protected String sharedSecret;
 
-    @ApiModelProperty(value = "contact email for player", example = "myroomisbroken@gmail.com", required = false)
-    protected String email;
-
     public String getSharedSecret() {
         return sharedSecret;
     }
@@ -40,14 +37,4 @@ public class PlayerCredentials {
     public void setSharedSecret(String sharedSecret) {
         this.sharedSecret = sharedSecret;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-
 }

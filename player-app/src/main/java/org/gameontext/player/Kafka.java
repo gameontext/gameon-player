@@ -54,7 +54,7 @@ public class Kafka implements Runnable {
 
     private Producer<String,String> producer=null;
     protected final ObjectMapper mapper = new ObjectMapper();
-    public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,UPDATE_EMAIL,CREATE,DELETE};
+    public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,CREATE,DELETE};
 
     private Thread thread;
     private volatile boolean keepGoing = true;

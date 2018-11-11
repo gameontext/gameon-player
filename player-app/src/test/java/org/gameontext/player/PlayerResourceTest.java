@@ -80,10 +80,8 @@ public class PlayerResourceTest {
     public void checkGetMatchingId() throws IOException {
         String playerId = "fish";
         Claims claims = Jwts.claims();
-        claims.put("email","example@test.test");
         claims.setAudience("client");
         new Expectations() {{
-            request.getAttribute("player.claims"); result = claims;
             request.getAttribute("player.id"); result = playerId;
             dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};

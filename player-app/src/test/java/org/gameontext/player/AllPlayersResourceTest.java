@@ -109,7 +109,6 @@ public class AllPlayersResourceTest {
     @Test(expected=UpdateConflictException.class)
     public void checkAlreadyKnownId() throws IOException{
         Claims claims = Jwts.claims();
-        claims.put("email","example@test.test");
         new Expectations() {{
             request.getAttribute("player.id"); result = playerArg.getId();
             request.getAttribute("player.claims"); result = claims;
@@ -122,10 +121,9 @@ public class AllPlayersResourceTest {
     @Test
     public void checkCreateSystemId(@Mocked Response response) throws IOException{
         Claims claims = Jwts.claims();
-        claims.put("email","example@test.test");
         new Expectations() {{
             request.getAttribute("player.id"); result = systemId;
-            request.getAttribute("player.claims"); result = claims;            
+            request.getAttribute("player.claims"); result = claims;
         }};
 
         tested.createPlayer(playerArg);
