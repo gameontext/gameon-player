@@ -2,6 +2,7 @@ FROM gameontext/docker-liberty-custom:master-12
 
 ENV SERVERDIRNAME player
 
+ADD https://raw.githubusercontent.com/gameontext/gameon/master/bin/init_couchdb.sh /opt/init_couchdb.sh
 COPY ./startup.sh /opt/startup.sh
 COPY ./servers/gameon-player /opt/ol/wlp/usr/servers/defaultServer/
 

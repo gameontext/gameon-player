@@ -67,57 +67,8 @@ if [ -f /etc/cert/cert.pem ]; then
   cd ${SERVER_PATH}
 fi
 
-# Check for couchdb. Retry a few times, fail if it doesn't show up.
-AUTH_URL=${COUCHDB_SERVICE_URL/\/\//\/\/$COUCHDB_USER:$COUCHDB_PASSWORD@}
-
-# RC=7 means the host isn't there yet. Let's do some re-trying until it
-# does start / is ready
-RC=7
-count=0
-while [ $RC -eq 7 ]; do
-  echo "** Testing connection to ${COUCHDB_SERVICE_URL}"
-  curl -s --fail -X GET ${AUTH_URL}
-  RC=$?
-
-  if [ $RC -eq 7 ]; then
-    if [ $count -gt 30 ]; then
-      echo "Unable to connect to ${COUCHDB_SERVICE_URL}"
-      exit 1
-    fi
-    ((count++))
-    sleep 15
-  fi
-done
-
-ensure_exists() {
-  local result=0
-  local uri=$1
-  local url=${AUTH_URL}/$uri
-  shift
-
-  count=0
-  while [ $result -ne 200 ]; do
-    result=$(curl -s -o /dev/null -w "%{http_code}" --fail -X GET $url)
-    echo "**** curl -X GET $uri  ==>  $result"
-
-    case "$result" in
-      200)
-        continue
-      ;;
-      404)
-        echo "-- curl -X PUT $url"
-        curl -s $@ -X PUT $url
-      ;;
-      409)
-        sleep 5
-      ;;
-      *)
-        echo "unknown";
-        exit 1
-      ;;
-    esac
-  done
-}
+# Make sure couchdb / cloudant is around
+. /opt/init_couchdb.sh 30
 
 if [ "$GAMEON_MODE" == "development" ]; then
   # LOCAL DEVELOPMENT!
