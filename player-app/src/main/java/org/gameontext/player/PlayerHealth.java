@@ -1,11 +1,11 @@
 package org.gameontext.player;
 
-import javax.inject.Inject;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.eclipse.microprofile.health.Health;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.ektorp.CouchDbConnector;
 
 
 @Health
@@ -13,17 +13,17 @@ import org.ektorp.CouchDbConnector;
 public class PlayerHealth implements HealthCheck {
 
     @Inject
-    protected CouchDbConnector db;
+    protected CouchDbHealth dbHealth;
 
     @Override
     public HealthCheckResponse call() {
-      if ( db != null && db.getDbInfo() != null ) {
+
+      if ( dbHealth.isHealthy() ) {
           return HealthCheckResponse.named(PlayersResource.class.getSimpleName())
-                                    .withData(db.getDatabaseName(), "available").up().build();
+                                    .withData(dbHealth.getDatabaseName(), "available").up().build();
       }
-      System.out.println("db = " + db);
       return HealthCheckResponse.named(PlayersResource.class.getSimpleName())
-                                .withData(db.getDatabaseName(), "down").down()
+                                .withData(dbHealth.getDatabaseName(), "down").down()
                                 .build();
     }
 }
