@@ -15,6 +15,9 @@
  *******************************************************************************/
 package org.gameontext.player;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,6 +37,9 @@ public class PlayersResource {
     @Inject
     protected CouchDbHealth dbHealth;
 
+    @Inject
+    Kafka kafka;
+
     @GET
     @ApiOperation(value="basic ping", hidden = true)
     public Response basicGet() {
@@ -48,9 +54,14 @@ public class PlayersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value="health check", hidden = true)
     public Response healthCheck() {
-        if ( dbHealth.isHealthy() ) {
+        if ( dbHealth.isHealthy() && kafka.isHealthy() ) {
             return Response.ok().entity("{\"status\":\"UP\"}").build();
         }  else {
+            Map<String,String> map = new HashMap<>();
+            map.put("status", "DOWN");
+            map.put("mapRepository", dbHealth.isHealthy()+"");
+            map.put("kafka", kafka.isHealthy()+"");
+
             return Response.status(Status.SERVICE_UNAVAILABLE).entity("{\"status\":\"DOWN\"}").build();
         }
     }

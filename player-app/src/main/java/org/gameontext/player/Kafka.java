@@ -52,6 +52,8 @@ public class Kafka implements Runnable {
     @Resource
     protected ManagedThreadFactory threadFactory;
 
+    private boolean DISABLE_KAFKA = Boolean.parseBoolean(System.getenv("DISABLE_KAFKA"));
+
     private Producer<String,String> producer=null;
     protected final ObjectMapper mapper = new ObjectMapper();
     public enum PlayerEvent {UPDATE,UPDATE_LOCATION,UPDATE_APIKEY,CREATE,DELETE};
@@ -126,6 +128,13 @@ public class Kafka implements Runnable {
         } catch(Exception e) {
             Log.log(Level.SEVERE, this, "Unknown error during kafka init, please report ", e);
         }
+    }
+
+    public boolean isHealthy() {
+        if ( DISABLE_KAFKA ) {
+            return true;
+        }
+        return producer != null;
     }
 
     public void publishPlayerEvent(PlayerEvent eventType, PlayerDbRecord player) {
