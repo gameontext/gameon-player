@@ -80,6 +80,9 @@ if [ "$GAMEON_MODE" == "development" ]; then
 
   echo "** Checking design documents"
   ensure_exists playerdb/_design/players --data-binary @/opt/player.json
+else
+  activeUrl=${AUTH_URL}
+  assert_exists playerdb
 fi
 
 exec /opt/ol/wlp/bin/server run defaultServer

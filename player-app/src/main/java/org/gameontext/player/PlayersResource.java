@@ -31,9 +31,8 @@ import io.swagger.annotations.ApiOperation;
 @Api( value = "players")
 public class PlayersResource {
 
-
     @Inject
-    protected CouchDbConnector db;
+    protected CouchDbHealth dbHealth;
 
     @GET
     @ApiOperation(value="basic ping", hidden = true)
@@ -49,10 +48,9 @@ public class PlayersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value="health check", hidden = true)
     public Response healthCheck() {
-        if ( db != null && db.getDbInfo() != null ) {
+        if ( dbHealth.isHealthy() ) {
             return Response.ok().entity("{\"status\":\"UP\"}").build();
         }  else {
-            System.out.println("db = " + db);
             return Response.status(Status.SERVICE_UNAVAILABLE).entity("{\"status\":\"DOWN\"}").build();
         }
     }
