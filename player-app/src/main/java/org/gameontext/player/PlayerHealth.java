@@ -25,13 +25,4 @@ public class PlayerHealth implements HealthCheck {
                                 .withData(dbHealth.getDatabaseName(), "down").down()
                                 .build();
     }
-    
-    public boolean isHealthy() {
-        try {
-            return db.getConnection() != null && db.getDbInfo() != null;
-        }
-        catch(Exception e) {
-            return false;
-        }
-    }
 }
