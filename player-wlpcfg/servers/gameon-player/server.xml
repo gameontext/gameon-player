@@ -13,14 +13,13 @@
     <feature>mpOpenAPI-1.0</feature>
   </featureManager>
   
-  <quickStartSecurity userName="admin" userPassword="password"/>
+  <mpMetrics authentication="false"/>
+
   <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
   <keyStore id="defaultTrustStore" location="truststore.jks" password="truststore"/>
 
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
-
-  <opentracingZipkin host="zipkin" port="9411"/>
 
   <!-- To access this server from a remote client add a host attribute to
        the following element, e.g. host="*" -->
