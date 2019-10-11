@@ -2,6 +2,10 @@ apply plugin: 'war'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'jacoco'
 
+jacoco {
+  toolVersion = "0.8.4"
+}
+
 sourceCompatibility = 1.8
 
 configurations {
