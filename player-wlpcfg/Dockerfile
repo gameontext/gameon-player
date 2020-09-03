@@ -1,8 +1,9 @@
-FROM gameontext/docker-liberty-custom:master-14
+FROM default-route-openshift-image-registry.apps-crc.testing/gameon-system/docker-liberty-custom:master-oz1
 
 ENV SERVERDIRNAME player
 
 ADD https://raw.githubusercontent.com/gameontext/gameon/master/bin/init_couchdb.sh /opt/init_couchdb.sh
+RUN chmod g+rwx /opt/init_couchdb.sh
 COPY ./startup.sh /opt/startup.sh
 COPY ./servers/gameon-player /opt/ol/wlp/usr/servers/defaultServer/
 
