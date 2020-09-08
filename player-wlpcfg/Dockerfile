@@ -1,4 +1,4 @@
-FROM default-route-openshift-image-registry.apps-crc.testing/gameon-system/docker-liberty-custom:master-oz1
+FROM gameontext/docker-liberty-custom:master-29
 
 ENV SERVERDIRNAME player
 
