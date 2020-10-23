@@ -15,8 +15,8 @@
 
   <mpMetrics authentication="false"/>
 
-  <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
-  <keyStore id="defaultTrustStore" location="truststore.jks" password="truststore"/>
+  <keyStore id="defaultKeyStore" location="key.pkcs12"  password="gameontext-keys"/>
+  <keyStore id="defaultTrustStore" location="truststore.jks" password="gameontext-trust"/>
 
   <sslDefault sslRef="DefaultSSLSettings"/>
   <ssl id="DefaultSSLSettings" keyStoreRef="defaultKeyStore" trustStoreRef="defaultTrustStore"/>
@@ -26,8 +26,8 @@
   <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint" />
 
   <!-- Signed JWT keystore info -->
-  <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.jks"/>
-  <jndiEntry jndiName="jwtKeyStorePassword" value="testOnlyKeystore"/>
+  <jndiEntry jndiName="jwtKeyStore" value="${server.config.dir}/resources/security/key.pkcs12"/>
+  <jndiEntry jndiName="jwtKeyStorePassword" value="gameontext-keys"/>
   <jndiEntry jndiName="jwtKeyStoreAlias" value="default"/>
 
   <jndiEntry jndiName="systemId" value="${env.SYSTEM_ID}"/>

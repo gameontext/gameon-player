@@ -98,22 +98,6 @@ public class Kafka implements Runnable {
             producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
             producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
 
-            //this is a cheat, we need to enable ssl when talking to message hub, and not to kafka locally
-            //the easiest way to know which we are running on, is to check how many hosts are in kafkaUrl
-            //locally for kafka there'll only ever be one, and messagehub gives us a whole bunch..
-            boolean multipleHosts = multipleHosts();
-            if(multipleHosts) {
-                Log.log(Level.INFO, this, "Initializing SSL Config for MessageHub");
-                producerProps.put("security.protocol","SASL_SSL");
-                producerProps.put("ssl.protocol","TLSv1.2");
-                producerProps.put("ssl.enabled.protocols","TLSv1.2");
-                Path p = Paths.get(System.getProperty("java.home"), "lib", "security", "cacerts");
-                producerProps.put("ssl.truststore.location", p.toString());
-                producerProps.put("ssl.truststore.password","changeit");
-                producerProps.put("ssl.truststore.type","JKS");
-                producerProps.put("ssl.endpoint.identification.algorithm","HTTPS");
-            }
-
             producer = new KafkaProducer<String, String>(producerProps);
 
             thread = threadFactory.newThread(this);
