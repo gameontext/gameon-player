@@ -8,8 +8,8 @@ RUN chmod g+rwx /opt/init_couchdb.sh
 USER 1001
 COPY ./startup.sh /opt/startup.sh
 COPY ./servers/gameon-player /opt/ol/wlp/usr/servers/defaultServer/
-
 COPY ./player.json /opt/player.json
+RUN mkdir -p /opt/ol/wlp/usr/servers/defaultServer/resources/security
 
 CMD ["/opt/startup.sh"]
 
