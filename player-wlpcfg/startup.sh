@@ -1,8 +1,10 @@
 #!/bin/bash
-
 export CONTAINER_NAME=player
 
 SERVER_PATH=/opt/ol/wlp/usr/servers/defaultServer
+
+certpath=/tmp/java-ssl/
+mkdir -p ${certpath}
 
 if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   echo Setting up etcd...
@@ -20,8 +22,7 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   done
   echo "etcdctl returned sucessfully, continuing"
 
-  mkdir -p /etc/cert
-  etcdctl get /proxy/third-party-ssl-cert > /etc/cert/cert.pem
+  etcdctl get /proxy/third-party-ssl-cert > ${certpath}/cert.pem
 
   export MAP_KEY=$(etcdctl get /passwords/map-key)
 
@@ -29,10 +30,6 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export COUCHDB_USER=$(etcdctl get /couchdb/user)
   export COUCHDB_PASSWORD=$(etcdctl get /passwords/couchdb)
 
-  export LOGMET_HOST=$(etcdctl get /logmet/host)
-  export LOGMET_PORT=$(etcdctl get /logmet/port)
-  export LOGMET_TENANT=$(etcdctl get /logmet/tenant)
-  export LOGMET_PWD=$(etcdctl get /logmet/pwd)
   export SYSTEM_ID=$(etcdctl get /global/system_id)
 
   GAMEON_MODE=$(etcdctl get /global/mode)
@@ -40,23 +37,18 @@ if [ "$ETCDCTL_ENDPOINT" != "" ]; then
   export TARGET_PLATFORM=$(etcdctl get /global/targetPlatform)
 
   export KAFKA_SERVICE_URL=$(etcdctl get /kafka/url)
-
-  #to run with message hub, we need a jaas jar we can only obtain
-  #from github, and have to use an extra config snippet to enable it.
-  export MESSAGEHUB_USER=$(etcdctl get /kafka/user)
-  export MESSAGEHUB_PASSWORD=$(etcdctl get /passwords/kafka)
 fi
 
-if [ -f /etc/cert/cert.pem ]; then
+if [ -f ${certpath}/cert.pem ]; then
   echo "Building keystore/truststore from cert.pem"
   echo "-creating dir"
   mkdir -p ${SERVER_PATH}/resources/security
   echo "-cd dir"
   cd ${SERVER_PATH}/resources/
   echo "-converting pem to pkcs12"
-  openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in /etc/cert/cert.pem
+  openssl pkcs12 -passin pass:keystore -passout pass:keystore -export -out cert.pkcs12 -in ${certpath}/cert.pem
   echo "-importing pem to truststore.jks"
-  keytool -import -v -trustcacerts -alias default -file /etc/cert/cert.pem -storepass truststore -keypass keystore -noprompt -keystore security/truststore.jks
+  keytool -import -v -trustcacerts -alias default -file ${certpath}/cert.pem -storepass truststore -keypass keystore -noprompt -keystore security/truststore.jks
   echo "-creating dummy key.jks"
   keytool -genkey -storepass testOnlyKeystore -keypass wefwef -keyalg RSA -alias endeca -keystore security/key.jks -dname CN=rsssl,OU=unknown,O=unknown,L=unknown,ST=unknown,C=CA
   echo "-emptying key.jks"

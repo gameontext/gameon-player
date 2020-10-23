@@ -135,8 +135,8 @@ public class PlayerResourceTest {
     public void checkGetSystemId() throws IOException {
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); result = "game-on.org";
+            tested.systemId = "gameontext.org";
+            request.getAttribute("player.id"); result = "gameontext.org";
             dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
@@ -151,7 +151,7 @@ public class PlayerResourceTest {
 
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId;
             dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
@@ -170,7 +170,7 @@ public class PlayerResourceTest {
 
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = null;
         }};
 
@@ -182,8 +182,8 @@ public class PlayerResourceTest {
 
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); result = "game-on.org";
+            tested.systemId = "gameontext.org";
+            request.getAttribute("player.id"); result = "gameontext.org";
             dbi.get(PlayerDbRecord.class, playerId); result = playerDb;
         }};
 
@@ -201,7 +201,7 @@ public class PlayerResourceTest {
 
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = "Biscuit";
         }};
 
@@ -213,7 +213,7 @@ public class PlayerResourceTest {
 
         String playerId = "fish";
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId;
             dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
@@ -234,7 +234,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("client");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId;
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
@@ -274,8 +274,8 @@ public class PlayerResourceTest {
         claims.setAudience("client");
 
         new Expectations() {{
-            tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); result = "game-on.org";
+            tested.systemId = "gameontext.org";
+            request.getAttribute("player.id"); result = "gameontext.org";
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
@@ -310,8 +310,8 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("client");
         new Expectations() {{
-            tested.systemId = "game-on.org";
-            request.getAttribute("player.id"); result = "game-on.org";
+            tested.systemId = "gameontext.org";
+            request.getAttribute("player.id"); result = "gameontext.org";
             dbi.get(PlayerDbRecord.class, playerId); result = new DocumentNotFoundException("player.id");
         }};
 
@@ -336,7 +336,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("client");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId+"FISH";
         }};
 
@@ -358,7 +358,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("client");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId;
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
@@ -404,7 +404,7 @@ public class PlayerResourceTest {
         proposed.setId(playerId);
 
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.id"); result = playerId;
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
@@ -446,7 +446,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("server");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
@@ -478,7 +478,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("server");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
         }};
@@ -510,7 +510,7 @@ public class PlayerResourceTest {
         Claims claims = Jwts.claims();
         claims.setAudience("server");
         new Expectations() {{
-            tested.systemId = "game-on.org";
+            tested.systemId = "gameontext.org";
             request.getAttribute("player.claims"); result = claims;
             dbi.get(PlayerDbRecord.class, playerId); result = dbEntry;
             dbi.update(any); result = new UpdateConflictException();
