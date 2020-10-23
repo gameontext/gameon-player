@@ -5,14 +5,14 @@
     <feature>cdi-1.2</feature>
     <feature>ssl-1.0</feature>
     <feature>jsonp-1.0</feature>
-    <feature>jndi-1.0</feature>  
+    <feature>jndi-1.0</feature>
     <feature>websocket-1.1</feature>
     <feature>mpMetrics-1.1</feature>
     <feature>mpHealth-1.0</feature>
     <feature>mpFaultTolerance-1.0</feature>
     <feature>mpOpenAPI-1.0</feature>
   </featureManager>
-  
+
   <mpMetrics authentication="false"/>
 
   <keyStore id="defaultKeyStore" location="key.jks"  password="testOnlyKeystore"/>
@@ -56,10 +56,9 @@
   <webApplication contextRoot="/players" id="player-app" location="player-app.war">
     <classloader apiTypeVisibility="api,ibm-api,spec,stable,third-party"/>
   </webApplication>
-  
+
   <jndiEntry jndiName="developmentMode" value="${env.GAMEON_MODE}"/>
   <jndiEntry jndiName="targetPlatform" value="${env.TARGET_PLATFORM}"/>
   <include location="${env.TARGET_PLATFORM}-config.xml" optional="true" />
-  <include location="${env.TARGET_PLATFORM}-messageHub.xml" optional="true" />
 
 </server>
