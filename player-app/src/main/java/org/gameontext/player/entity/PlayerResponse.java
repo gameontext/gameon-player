@@ -69,6 +69,18 @@ public class PlayerResponse {
             notes = "Credentials, only present if request is authorized",
             required = false)
     protected PlayerCredentials credentials;
+    
+    @ApiModelProperty(
+        value = "Story ID",
+        example = "my.story.room.id",
+        required = false)
+    protected String story;
+    
+    @ApiModelProperty(
+        value = "Player Mode",
+        example = "full",
+        required = false)
+    protected String playerMode;    
 
     @JsonCreator
     public PlayerResponse() {}
@@ -122,6 +134,22 @@ public class PlayerResponse {
     public void setCredentials(PlayerCredentials credentials){
         this.credentials = credentials;
     }
+    
+    public String getStory() {
+      return story;
+    }
+
+    public void setStory(String story) {
+      this.story = story;
+    }
+
+    public String getPlayerMode() {
+      return playerMode;
+    }
+
+    public void setPlayerMode(String playerMode) {
+      this.playerMode = playerMode;
+    }
 
     @JsonIgnore
     public void update(PlayerDbRecord db){
@@ -133,6 +161,8 @@ public class PlayerResponse {
         this.location.setLocation(db.getLocation());
         this.credentials = new PlayerCredentials();
         this.credentials.setSharedSecret(db.getApiKey());
+        this.story = db.story;
+        this.playerMode = db.playerMode;
     }
 
     @Override

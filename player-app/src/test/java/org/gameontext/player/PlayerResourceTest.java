@@ -69,6 +69,8 @@ public class PlayerResourceTest {
         playerDb.setLocation("Home");
         playerDb.setRev("high");
         playerDb.setApiKey("FISH");
+        playerDb.setStory("fish");
+        playerDb.setPlayerMode("full");
 
         playerArg.setId("123");
         playerArg.setName("Chunky");
@@ -89,6 +91,8 @@ public class PlayerResourceTest {
         PlayerResponse result = tested.getPlayerInformation(playerId);
 
         assertEquals( "Method should return the mocked player", playerDb.getId(), result.getId());
+        assertEquals( "Method should return the player story", playerDb.getStory(), result.getStory());
+        assertEquals( "Method should return the player mode", playerDb.getPlayerMode(), result.getPlayerMode());
         assertNotNull( "Method should return credentials for matching id",result.getCredentials());
     }
 

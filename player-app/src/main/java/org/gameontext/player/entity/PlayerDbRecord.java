@@ -58,6 +58,18 @@ public class PlayerDbRecord {
             example = "Tangerine",
             required = true)
     protected String favoriteColor;
+    
+    @ApiModelProperty(
+        value = "Story ID",
+        example = "my.story.room.id",
+        required = false)
+    protected String story;
+    
+    @ApiModelProperty(
+        value = "Player Mode",
+        example = "full",
+        required = false)
+    protected String playerMode;
 
     @JsonCreator
     public PlayerDbRecord() {}
@@ -128,6 +140,21 @@ public class PlayerDbRecord {
         this.location = location;
     }
 
+    public String getStory() {
+      return story;
+    }
+
+    public void setStory(String story) {
+      this.story = story;
+    }
+
+    public String getPlayerMode() {
+      return playerMode;
+    }
+
+    public void setPlayerMode(String playerMode) {
+      this.playerMode = playerMode;
+    }
 
     @Override
     public String toString() {

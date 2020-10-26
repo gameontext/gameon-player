@@ -180,10 +180,19 @@ public class AllPlayersResource {
 
         PlayerDbRecord pFull = new PlayerDbRecord();
         pFull.update(player);   // get all proposed updates
+        
         Claims claims = (Claims) httpRequest.getAttribute("player.claims");
 
         // make sure an API key is generated for the new user
         pFull.setApiKey(SharedSecretGenerator.generateApiKey());
+        
+        //add in story/playerMode if they are present in the users auth jwt.
+        if(claims.containsKey("story")) {
+          pFull.setStory(claims.get("story", String.class));
+        }
+        if(claims.containsKey("playerMode")) {
+          pFull.setStory(claims.get("playerMode", String.class));
+        }
 
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
