@@ -191,9 +191,8 @@ public class AllPlayersResource {
           pFull.setStory(claims.get("story", String.class));
         }
         if(claims.containsKey("playerMode")) {
-          pFull.setStory(claims.get("playerMode", String.class));
+          pFull.setPlayerMode(claims.get("playerMode", String.class));
         }
-
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);
 
