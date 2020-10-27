@@ -70,7 +70,7 @@ public class PlayerResourceTest {
         playerDb.setRev("high");
         playerDb.setApiKey("FISH");
         playerDb.setStory("fish");
-        playerDb.setPlayerMode("full");
+        playerDb.setPlayerMode("default");
 
         playerArg.setId("123");
         playerArg.setName("Chunky");
