@@ -34,12 +34,7 @@ public class PlayerResponse {
 
     /** Player account/record id */
     @JsonProperty("_id")
-    @ApiModelProperty(
-            value = "Unique player id",
-            readOnly = true,
-            name = "_id",
-            example = "oauthProvider:userid",
-            required = true)
+    @ApiModelProperty(value = "Unique player id", readOnly = true, name = "_id", example = "oauthProvider:userid", required = true)
     protected String id;
 
     /** Document revision */
@@ -47,43 +42,27 @@ public class PlayerResponse {
     @ApiModelProperty(hidden = true)
     protected String rev;
 
-    @ApiModelProperty(
-            value = "Player name",
-            example = "Harriet",
-            required = true)
+    @ApiModelProperty(value = "Player name", example = "Harriet", required = true)
     protected String name;
 
-    @ApiModelProperty(
-            value = "Favorite color",
-            example = "Tangerine",
-            required = true)
+    @ApiModelProperty(value = "Favorite color", example = "Tangerine", required = true)
     protected String favoriteColor;
 
-    @ApiModelProperty(
-            value = "Player Location",
-            required = true)
+    @ApiModelProperty(value = "Player Location", required = true)
     protected PlayerLocation location;
 
-    @ApiModelProperty(
-            value = "Player Credentials",
-            notes = "Credentials, only present if request is authorized",
-            required = false)
+    @ApiModelProperty(value = "Player Credentials", notes = "Credentials, only present if request is authorized", required = false)
     protected PlayerCredentials credentials;
-    
-    @ApiModelProperty(
-        value = "Story ID",
-        example = "my.story.room.id",
-        required = false)
+
+    @ApiModelProperty(value = "Story ID", example = "my.story.room.id", required = false)
     protected String story;
-    
-    @ApiModelProperty(
-        value = "Player Mode",
-        example = "default",
-        required = false)
-    protected String playerMode;    
+
+    @ApiModelProperty(value = "Player Mode", example = "default", required = false)
+    protected String playerMode;
 
     @JsonCreator
-    public PlayerResponse() {}
+    public PlayerResponse() {
+    }
 
     public PlayerResponse(PlayerDbRecord db) {
         update(db);
@@ -92,6 +71,7 @@ public class PlayerResponse {
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -99,6 +79,7 @@ public class PlayerResponse {
     public String getRev() {
         return rev;
     }
+
     public void setRev(String rev) {
         this.rev = rev;
     }
@@ -123,36 +104,36 @@ public class PlayerResponse {
         this.location = location;
     }
 
-    public PlayerLocation getLocation(){
+    public PlayerLocation getLocation() {
         return location;
     }
 
-    public PlayerCredentials getCredentials(){
+    public PlayerCredentials getCredentials() {
         return credentials;
     }
 
-    public void setCredentials(PlayerCredentials credentials){
+    public void setCredentials(PlayerCredentials credentials) {
         this.credentials = credentials;
     }
-    
+
     public String getStory() {
-      return story;
+        return story;
     }
 
     public void setStory(String story) {
-      this.story = story;
+        this.story = story;
     }
 
     public String getPlayerMode() {
-      return playerMode;
+        return playerMode;
     }
 
     public void setPlayerMode(String playerMode) {
-      this.playerMode = playerMode;
+        this.playerMode = playerMode;
     }
 
     @JsonIgnore
-    public void update(PlayerDbRecord db){
+    public void update(PlayerDbRecord db) {
         this.id = db.id;
         this.rev = db.rev;
         this.name = db.name;
@@ -167,7 +148,6 @@ public class PlayerResponse {
 
     @Override
     public String toString() {
-        return "Player [id=" + id + ", revision=" + rev +", name=" + name
-                + ", favoriteColor=" + favoriteColor + "]";
+        return "Player [id=" + id + ", revision=" + rev + ", name=" + name + ", favoriteColor=" + favoriteColor + "]";
     }
 }
