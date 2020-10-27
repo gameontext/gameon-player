@@ -78,7 +78,7 @@ public class PlayerResponse {
     
     @ApiModelProperty(
         value = "Player Mode",
-        example = "full",
+        example = "default",
         required = false)
     protected String playerMode;    
 

@@ -187,11 +187,11 @@ public class AllPlayersResource {
         pFull.setApiKey(SharedSecretGenerator.generateApiKey());
         
         //add in story/playerMode if they are present in the users auth jwt.
-        if(claims.containsKey("story")) {
-          pFull.setStory(claims.get("story", String.class));
+        if (claims.containsKey("story")) {
+            pFull.setStory(claims.get("story", String.class));
         }
-        if(claims.containsKey("playerMode")) {
-          pFull.setPlayerMode(claims.get("playerMode", String.class));
+        if (claims.containsKey("playerMode")) {
+            pFull.setPlayerMode(claims.get("playerMode", String.class));
         }
         // NOTE: Thrown exceptions are mapped (see ErrorResponseMapper)
         db.create(pFull);

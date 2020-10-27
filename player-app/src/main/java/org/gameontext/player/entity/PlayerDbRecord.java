@@ -67,7 +67,7 @@ public class PlayerDbRecord {
     
     @ApiModelProperty(
         value = "Player Mode",
-        example = "full",
+        example = "default",
         required = false)
     protected String playerMode;
 
